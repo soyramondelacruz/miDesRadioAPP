@@ -12,7 +12,7 @@ const LOCAL_LINKS: LinksPayload = {
   whatsapp: "https://wa.me/18099779515",
   youtube: "https://www.youtube.com",
   instagram: "https://www.instagram.com/midesradio",
- 
+ facebook: "https://www.facebook.com/midesradio"
 };
 
 type CacheEntry<T> = {
