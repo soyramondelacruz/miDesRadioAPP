@@ -1,14 +1,23 @@
 import React from "react";
-import { View, Text, Button } from "react-native";
+import { View, Text, Button, ScrollView, RefreshControl } from "react-native";
 import { useNowPlaying } from "../hooks/useNowPlaying";
 import { NowPlayingCard } from "../components/NowPlayingCard";
+import { DevDataSourceBadge } from "../components/DevDataSourceBadge";
 
 export function NowPlayingScreen() {
-  const { data, loading, error, reload } = useNowPlaying(30000);
+  const { data, loading, refreshing, error, reload, refresh, source } = useNowPlaying(30000);
 
   return (
-    <View style={{ flex: 1, padding: 24, gap: 12 }}>
+    <ScrollView
+      style={{ flex: 1 }}
+      contentContainerStyle={{ padding: 24, gap: 12, paddingBottom: 24 }}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={refresh} />
+      }
+    >
       <Text style={{ fontSize: 24, fontWeight: "800" }}>Ahora Sonando</Text>
+
+      <DevDataSourceBadge source={source} />
 
       {loading ? <Text>Cargando…</Text> : null}
 
@@ -20,6 +29,10 @@ export function NowPlayingScreen() {
       ) : null}
 
       {data ? <NowPlayingCard data={data} variant="full" /> : null}
-    </View>
+
+      <Text style={{ opacity: 0.6 }}>
+        Desliza hacia abajo para refrescar (ignora TTL).
+      </Text>
+    </ScrollView>
   );
 }

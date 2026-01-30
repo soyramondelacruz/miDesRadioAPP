@@ -1,10 +1,11 @@
 import React, { useMemo } from "react";
-import { View, Text, ScrollView, Button } from "react-native";
+import { View, Text, ScrollView, Button, RefreshControl } from "react-native";
 import { useSchedule } from "../hooks/useSchedule";
+import { DevDataSourceBadge } from "../components/DevDataSourceBadge";
 import { getTodayWeekday, rotateWeek } from "../utils/date";
 
 export function ScheduleScreen() {
-  const { data, loading, error, reload } = useSchedule();
+  const { data, loading, refreshing, error, reload, refresh, source } = useSchedule();
 
   const orderedWeek = useMemo(() => {
     if (!data) return [];
@@ -13,15 +14,11 @@ export function ScheduleScreen() {
     return rotateWeek(data.week, today);
   }, [data]);
 
-  const todayLabel = useMemo(() => {
-    if (!data) return null;
-    const tz = data.timezone || "America/Santo_Domingo";
-    return getTodayWeekday(tz);
-  }, [data]);
-
   return (
     <View style={{ flex: 1, padding: 24, gap: 12 }}>
       <Text style={{ fontSize: 24, fontWeight: "800" }}>Programación</Text>
+
+      <DevDataSourceBadge source={source} />
 
       {loading ? <Text>Cargando…</Text> : null}
 
@@ -33,16 +30,15 @@ export function ScheduleScreen() {
       ) : null}
 
       {data ? (
-        <ScrollView contentContainerStyle={{ paddingBottom: 24 }}>
-          <Text style={{ opacity: 0.7, marginBottom: 6 }}>
+        <ScrollView
+          contentContainerStyle={{ paddingBottom: 24 }}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={refresh} />
+          }
+        >
+          <Text style={{ opacity: 0.7, marginBottom: 12 }}>
             Zona horaria: {data.timezone}
           </Text>
-
-          {todayLabel ? (
-            <Text style={{ opacity: 0.8, marginBottom: 12 }}>
-              Hoy: {todayLabel}
-            </Text>
-          ) : null}
 
           {orderedWeek.map((day, index) => {
             const isToday = index === 0;
@@ -86,6 +82,10 @@ export function ScheduleScreen() {
               </View>
             );
           })}
+
+          <Text style={{ opacity: 0.6 }}>
+            Desliza hacia abajo para refrescar (ignora TTL).
+          </Text>
         </ScrollView>
       ) : null}
     </View>

@@ -1,8 +1,8 @@
 import type { NowPlayingPayload, SchedulePayload } from "../types/content.types";
+import type { DataSource } from "../types/remote.types";
 import { REMOTE_CONFIG } from "../config/remote.config";
 import { fetchJsonWithTimeout } from "../utils/fetchJsonWithTimeout";
 
-// Fallback local (mock). Se mantiene como "última línea de defensa".
 import nowPlayingLocal from "../../now-playing.json";
 import scheduleLocal from "../../schedule.json";
 
@@ -11,9 +11,24 @@ type CacheEntry<T> = {
   expiresAt: number;
 };
 
+type GetOptions = {
+  forceRefresh?: boolean; // ignora cache TTL
+};
+
 class ContentService {
   private nowPlayingCache: CacheEntry<NowPlayingPayload> | null = null;
   private scheduleCache: CacheEntry<SchedulePayload> | null = null;
+
+  private lastNowPlayingSource: DataSource | null = null;
+  private lastScheduleSource: DataSource | null = null;
+
+  getLastNowPlayingSource(): DataSource | null {
+    return this.lastNowPlayingSource;
+  }
+
+  getLastScheduleSource(): DataSource | null {
+    return this.lastScheduleSource;
+  }
 
   private isFresh(entry: CacheEntry<any> | null): boolean {
     return !!entry && Date.now() < entry.expiresAt;
@@ -26,8 +41,10 @@ class ContentService {
     });
   }
 
-  async getNowPlaying(): Promise<NowPlayingPayload> {
-    if (this.isFresh(this.nowPlayingCache)) {
+  async getNowPlaying(options: GetOptions = {}): Promise<NowPlayingPayload> {
+    const { forceRefresh = false } = options;
+
+    if (!forceRefresh && this.isFresh(this.nowPlayingCache)) {
       return this.nowPlayingCache!.data;
     }
 
@@ -35,7 +52,6 @@ class ContentService {
     if (REMOTE_CONFIG.enabled) {
       const url = REMOTE_CONFIG.endpoints.nowPlaying;
 
-      // Si el usuario aún no puso URL real, caerá a local.
       if (url && url.startsWith("https://")) {
         try {
           const remote = await fetchJsonWithTimeout<NowPlayingPayload>(
@@ -43,21 +59,25 @@ class ContentService {
             REMOTE_CONFIG.requestTimeoutMs
           );
 
+          this.lastNowPlayingSource = "remote";
           this.setCache((v) => (this.nowPlayingCache = v), remote);
           return remote;
         } catch {
-          // silencioso: seguimos con local (MVP estable)
+          // fallback local
         }
       }
     }
 
     const local = nowPlayingLocal as NowPlayingPayload;
+    this.lastNowPlayingSource = "local";
     this.setCache((v) => (this.nowPlayingCache = v), local);
     return local;
   }
 
-  async getSchedule(): Promise<SchedulePayload> {
-    if (this.isFresh(this.scheduleCache)) {
+  async getSchedule(options: GetOptions = {}): Promise<SchedulePayload> {
+    const { forceRefresh = false } = options;
+
+    if (!forceRefresh && this.isFresh(this.scheduleCache)) {
       return this.scheduleCache!.data;
     }
 
@@ -71,6 +91,7 @@ class ContentService {
             REMOTE_CONFIG.requestTimeoutMs
           );
 
+          this.lastScheduleSource = "remote";
           this.setCache((v) => (this.scheduleCache = v), remote);
           return remote;
         } catch {
@@ -80,6 +101,7 @@ class ContentService {
     }
 
     const local = scheduleLocal as SchedulePayload;
+    this.lastScheduleSource = "local";
     this.setCache((v) => (this.scheduleCache = v), local);
     return local;
   }
