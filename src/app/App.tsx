@@ -1,13 +1,11 @@
 import React from "react";
-import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
-import { HomeScreen } from "../screens/HomeScreen";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+import { AppNavigator } from "../navigation/AppNavigator";
 
 export default function App() {
   return (
     <SafeAreaProvider>
-      <SafeAreaView style={{ flex: 1 }}>
-        <HomeScreen />
-      </SafeAreaView>
+      <AppNavigator />
     </SafeAreaProvider>
   );
 }

@@ -1,0 +1,121 @@
+{
+  "timezone": "America/Santo_Domingo",
+  "week": [
+    {
+      "day": "Monday",
+      "items": [
+        {
+          "id": "mon-0600",
+          "title": "Alba de Adoración",
+          "type": "music",
+          "startTime": "06:00",
+          "endTime": "09:00",
+          "description": "Música cristiana y mensajes cortos.",
+          "tags": ["adoración", "música"]
+        },
+        {
+          "id": "mon-0900",
+          "title": "Mañanas de Fe",
+          "type": "program",
+          "startTime": "09:00",
+          "endTime": "11:00",
+          "description": "Reflexión, comunidad y esperanza.",
+          "tags": ["devocional", "comunidad"]
+        }
+      ]
+    },
+    {
+      "day": "Tuesday",
+      "items": [
+        {
+          "id": "tue-0600",
+          "title": "Alba de Adoración",
+          "type": "music",
+          "startTime": "06:00",
+          "endTime": "09:00",
+          "description": "Música cristiana y mensajes cortos.",
+          "tags": ["adoración", "música"]
+        },
+        {
+          "id": "tue-0900",
+          "title": "Mañanas de Fe",
+          "type": "program",
+          "startTime": "09:00",
+          "endTime": "11:00",
+          "description": "Reflexión, comunidad y esperanza.",
+          "tags": ["devocional", "comunidad"]
+        }
+      ]
+    },
+    {
+      "day": "Wednesday",
+      "items": [
+        {
+          "id": "wed-0600",
+          "title": "Alba de Adoración",
+          "type": "music",
+          "startTime": "06:00",
+          "endTime": "09:00",
+          "description": "Música cristiana y mensajes cortos.",
+          "tags": ["adoración", "música"]
+        }
+      ]
+    },
+    {
+      "day": "Thursday",
+      "items": [
+        {
+          "id": "thu-0600",
+          "title": "Alba de Adoración",
+          "type": "music",
+          "startTime": "06:00",
+          "endTime": "09:00",
+          "description": "Música cristiana y mensajes cortos.",
+          "tags": ["adoración", "música"]
+        }
+      ]
+    },
+    {
+      "day": "Friday",
+      "items": [
+        {
+          "id": "fri-0600",
+          "title": "Alba de Adoración",
+          "type": "music",
+          "startTime": "06:00",
+          "endTime": "09:00",
+          "description": "Música cristiana y mensajes cortos.",
+          "tags": ["adoración", "música"]
+        }
+      ]
+    },
+    {
+      "day": "Saturday",
+      "items": [
+        {
+          "id": "sat-0800",
+          "title": "Especial de Jóvenes",
+          "type": "program",
+          "startTime": "08:00",
+          "endTime": "10:00",
+          "description": "Contenido fresco para adolescentes y jóvenes.",
+          "tags": ["jóvenes"]
+        }
+      ]
+    },
+    {
+      "day": "Sunday",
+      "items": [
+        {
+          "id": "sun-0900",
+          "title": "Culto en Casa",
+          "type": "program",
+          "startTime": "09:00",
+          "endTime": "11:30",
+          "description": "Predicación, adoración y oración.",
+          "tags": ["culto", "predicación"]
+        }
+      ]
+    }
+  ]
+}

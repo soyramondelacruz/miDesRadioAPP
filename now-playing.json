@@ -1,0 +1,20 @@
+{
+  "isLive": true,
+  "station": "miDes Radio",
+  "show": {
+    "id": "show-morning",
+    "title": "Mañanas de Fe",
+    "host": "Equipo miDes",
+    "startTime": "09:00",
+    "endTime": "11:00",
+    "description": "Música, reflexión y comunidad para comenzar el día.",
+    "coverImage": "https://picsum.photos/400/400"
+  },
+  "track": {
+    "title": "Gracias Señor",
+    "artist": "Adoración Viva",
+    "album": "En Vivo",
+    "artwork": "https://picsum.photos/401/401"
+  },
+  "updatedAt": "2026-01-30T11:00:00-04:00"
+}
