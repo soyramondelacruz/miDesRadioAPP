@@ -1,0 +1,1 @@
+export type AudioStatus = 'idle' | 'loading' | 'playing' | 'paused' | 'error';
