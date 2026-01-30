@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
 import { linksService } from "../services/links.service";
-import type { LinksPayload } from "../types/links.types";
+import type { LinksPayloadV2 } from "../types/links.types";
 
 export function useLinks() {
-  const [links, setLinks] = useState<LinksPayload>({});
+  const [data, setData] = useState<LinksPayloadV2 | null>(null);
   const [loading, setLoading] = useState(true);
 
   async function load(force = false) {
-    const data = await linksService.getLinks(force);
-    setLinks(data);
+    const res = await linksService.getLinks(force);
+    setData(res);
     setLoading(false);
   }
 
@@ -16,5 +16,5 @@ export function useLinks() {
     load(false);
   }, []);
 
-  return { links, loading, refresh: () => load(true) };
+  return { data, loading, refresh: () => load(true) };
 }

@@ -1,12 +1,12 @@
 import React from "react";
-import { TouchableOpacity, Text, Linking } from "react-native";
+import { TouchableOpacity, Text } from "react-native";
 import type { LinkValue } from "../types/links.types";
 import { buildWhatsAppUrl } from "../utils/whatsapp";
+import { openExternalLink } from "../utils/openExternalLink";
 
 type Props = {
   label: string;
   value?: LinkValue;
-  // Si true, se interpreta como whatsapp y se aplica ?text= cuando haya message
   isWhatsApp?: boolean;
 };
 
@@ -23,9 +23,9 @@ export function ActionButton({ label, value, isWhatsApp }: Props) {
 
   if (!url) return null;
 
-  const onPress = () => {
-    Linking.openURL(url).catch(() => {
-      alert("No se pudo abrir el enlace.");
+  const onPress = async () => {
+    await openExternalLink(url, {
+      failureMessage: "No se pudo abrir el enlace. Verifica tu conexión o la app instalada.",
     });
   };
 
