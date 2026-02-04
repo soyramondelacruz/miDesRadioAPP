@@ -2,7 +2,7 @@ export const LINKS_CONFIG = {
   enabled: true,
 
   endpoints: {
-    links: "https://TU-DOMINIO/links.json",
+    links: "https://mides-radio-config1.vercel.app/links.json",
   },
 
   requestTimeoutMs: 5000,
