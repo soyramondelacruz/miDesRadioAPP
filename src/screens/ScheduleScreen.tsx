@@ -1,11 +1,19 @@
 import React, { useMemo } from "react";
-import { View, Text, ScrollView, Button, RefreshControl } from "react-native";
+import {
+  View,
+  Text,
+  ScrollView,
+  Button,
+  RefreshControl,
+} from "react-native";
+
 import { useSchedule } from "../hooks/useSchedule";
 import { DevDataSourceBadge } from "../components/DevDataSourceBadge";
 import { getTodayWeekday, rotateWeek } from "../utils/date";
 
 export function ScheduleScreen() {
-  const { data, loading, refreshing, error, reload, refresh, source } = useSchedule();
+  const { data, loading, refreshing, error, reload, refresh, source } =
+    useSchedule();
 
   const orderedWeek = useMemo(() => {
     if (!data) return [];
@@ -15,15 +23,18 @@ export function ScheduleScreen() {
   }, [data]);
 
   return (
-    <View style={{ flex: 1, padding: 24, gap: 12 }}>
-      <Text style={{ fontSize: 24, fontWeight: "800" }}>Programación</Text>
+    <View style={{ flex: 1, padding: 24 }}>
+      {/* Header simple (temporal) */}
+      <Text style={{ fontSize: 24, fontWeight: "800", marginBottom: 8 }}>
+        Programación
+      </Text>
 
       <DevDataSourceBadge source={source} />
 
-      {loading ? <Text>Cargando…</Text> : null}
+      {loading && <Text>Cargando…</Text>}
 
       {error ? (
-        <View style={{ gap: 8 }}>
+        <View style={{ gap: 8, marginVertical: 12 }}>
           <Text style={{ color: "red" }}>Error: {error}</Text>
           <Button title="Reintentar" onPress={reload} />
         </View>
@@ -49,9 +60,9 @@ export function ScheduleScreen() {
                   {isToday ? `📌 ${day.day} (Hoy)` : day.day}
                 </Text>
 
-                {day.items.length === 0 ? (
+                {day.items.length === 0 && (
                   <Text style={{ opacity: 0.7 }}>Sin programación</Text>
-                ) : null}
+                )}
 
                 {day.items.map((item) => (
                   <View
@@ -68,10 +79,13 @@ export function ScheduleScreen() {
                     <Text style={{ fontWeight: "800" }}>
                       {item.startTime}–{item.endTime} • {item.title}
                     </Text>
+
                     <Text style={{ opacity: 0.8 }}>
                       Tipo: {item.type.toUpperCase()}
                     </Text>
+
                     {item.description ? <Text>{item.description}</Text> : null}
+
                     {item.tags?.length ? (
                       <Text style={{ opacity: 0.7 }}>
                         Tags: {item.tags.join(", ")}

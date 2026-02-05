@@ -6,7 +6,7 @@ import { PlayerControls } from "../components/PlayerControls";
 import { useNowPlaying } from "../hooks/useNowPlaying";
 import { NowPlayingCard } from "../components/NowPlayingCard";
 
-export function HomeScreen() {
+export function RadioScreen() {
   const { state, play, pause, stop } = useRadioPlayer();
   const now = useNowPlaying(30000);
 

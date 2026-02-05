@@ -10,7 +10,7 @@ function sortActions(actions: LinkAction[]) {
     .sort((a, b) => (a.order ?? 9999) - (b.order ?? 9999));
 }
 
-export function InteractionScreen() {
+export function ContactScreen() {
   const { data, loading, refresh } = useLinks();
 
   const actionsBySection = useMemo(() => {
