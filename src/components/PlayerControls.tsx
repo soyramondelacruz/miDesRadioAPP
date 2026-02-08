@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Button, Text } from "react-native";
 import { PlayerStatus } from "../types/radio.types";
+import { spacing, colors } from "../theme";
 
 type Props = {
   status: PlayerStatus;
@@ -10,21 +11,36 @@ type Props = {
 };
 
 export function PlayerControls({ status, onPlay, onPause, onStop }: Props) {
+  const isIdle = status === "idle";
   const isLoading = status === "loading";
   const isPlaying = status === "playing";
+  const isPaused = status === "paused";
+  const isError = status === "error";
 
   return (
-    <View style={{ gap: 10 }}>
-      <Text>Estado: {status}</Text>
+    <View style={{ gap: spacing.sm }}>
+      <Text style={{ fontSize: 13, color: colors.muted }}>
+        Estado: {status}
+      </Text>
 
-      <View style={{ flexDirection: "row", gap: 12 }}>
+      <View style={{ flexDirection: "row", gap: spacing.sm }}>
         <Button
-          title={isLoading ? "Cargando..." : isPlaying ? "Reproduciendo" : "▶️ Play"}
+          title={isLoading ? "Conectando…" : "▶️ Play"}
           onPress={onPlay}
-          disabled={isLoading || isPlaying}
+          disabled={!(isIdle || isPaused || isError)}
         />
-        <Button title="⏸ Pause" onPress={onPause} disabled={isLoading || !isPlaying} />
-        <Button title="⏹ Stop" onPress={onStop} disabled={isLoading} />
+
+        <Button
+          title="⏸ Pause"
+          onPress={onPause}
+          disabled={!isPlaying}
+        />
+
+        <Button
+          title="⏹ Stop"
+          onPress={onStop}
+          disabled={!(isPlaying || isPaused)}
+        />
       </View>
     </View>
   );

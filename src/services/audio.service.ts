@@ -11,17 +11,18 @@ class AudioService {
   async init(): Promise<void> {
     if (this.initialized) return;
 
-    // Modo mínimo y conservador: evita incompatibilidades de tipos en Android.
-    // Si setAudioModeAsync falla, NO bloqueamos el playback (MVP first).
     try {
       await setAudioModeAsync({
-        playsInSilentMode: true,
-        shouldPlayInBackground: true,
+        // 🔴 CLAVES PARA BACKGROUND AUDIO
+        playsInSilentMode: true,        // iOS: reproduce aunque el switch esté en silencio
+        shouldPlayInBackground: true,   // iOS + Android: continúa al bloquear pantalla
         allowsRecording: false,
-        // ⚠️ NO usamos interruptionMode aquí por incompatibilidad observada en algunas versiones Android.
+
+        // ⚠️ Evitamos interruptionMode por compatibilidad Android
+        // interruptionModeIOS / Android se omiten a propósito
       });
     } catch (e) {
-      // No frenar el reproductor por settings; seguimos.
+      // No bloqueamos el playback si falla el seteo (MVP-first)
       if (__DEV__) {
         console.warn("[miDes] setAudioModeAsync failed (non-fatal):", e);
       }

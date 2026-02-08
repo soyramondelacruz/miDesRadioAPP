@@ -5,23 +5,37 @@ import { useRadioPlayer } from "../hooks/useRadioPlayer";
 import { PlayerControls } from "../components/PlayerControls";
 import { useNowPlaying } from "../hooks/useNowPlaying";
 import { NowPlayingCard } from "../components/NowPlayingCard";
+import { colors, spacing } from "../theme";
 
 export function RadioScreen() {
   const { state, play, pause, stop } = useRadioPlayer();
   const now = useNowPlaying(30000);
 
   return (
-    <View style={{ flex: 1, padding: 24, gap: 14 }}>
+    <View
+      style={{
+        flex: 1,
+        padding: spacing.lg,
+        gap: spacing.md,
+        backgroundColor: colors.background,
+      }}
+    >
       <Text style={{ fontSize: 26, fontWeight: "800" }}>
         {RADIO_CONFIG.APP_NAME}
       </Text>
 
-      <Text style={{ fontSize: 16 }}>
+      <Text
+        style={{
+          fontSize: 16,
+          fontWeight: "600",
+          color: state.isLive ? colors.danger : colors.muted,
+        }}
+      >
         {state.isLive ? "🔴 En vivo" : "⚪️ Offline"}
       </Text>
 
       {state.status === "error" && (
-        <Text style={{ color: "red" }}>
+        <Text style={{ color: colors.danger }}>
           Error: {state.errorMessage ?? "No se pudo reproducir."}
         </Text>
       )}
@@ -33,15 +47,21 @@ export function RadioScreen() {
         onStop={stop}
       />
 
-      <View style={{ height: 10 }} />
+      {now.loading && (
+        <Text style={{ color: colors.muted }}>
+          Cargando Ahora Sonando…
+        </Text>
+      )}
 
-      {now.loading ? <Text>Cargando Ahora Sonando…</Text> : null}
+      {now.error && (
+        <Text style={{ color: colors.danger }}>
+          Error Ahora Sonando: {now.error}
+        </Text>
+      )}
 
-      {now.error ? (
-        <Text style={{ color: "red" }}>Error Ahora Sonando: {now.error}</Text>
-      ) : null}
-
-      {now.data ? <NowPlayingCard data={now.data} variant="compact" /> : null}
+      {now.data && (
+        <NowPlayingCard data={now.data} variant="compact" />
+      )}
     </View>
   );
 }
