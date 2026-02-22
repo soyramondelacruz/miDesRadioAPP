@@ -177,25 +177,44 @@ export function HomeScheduleCarousel({ onOpenRadio }: { onOpenRadio?: () => void
 
   return (
     <View style={{ gap: 10 }}>
-      <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-end" }}>
-        <Text
-          style={{
-            fontSize: 12,
-            fontWeight: "900",
-            color: "rgba(255,255,255,0.70)",
-            letterSpacing: 1,
-          }}
+            <View
+        style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+        }}
         >
-          PROGRAMACIÓN
+        <Text
+            style={{
+            fontSize: 13,
+            fontWeight: "900",
+            color: "rgba(255,255,255,0.88)",
+            letterSpacing: 1.4,
+            }}
+        >
+            PROGRAMACIÓN
         </Text>
 
-        <Pressable onPress={openRadio} style={{ paddingVertical: 4 }}>
-          <Text style={{ fontSize: 12, fontWeight: "900", color: "#9CC3FF" }}>
-            Ver en radio →
-          </Text>
+        <Pressable
+        onPress={openRadio}
+        hitSlop={10}
+        style={({ pressed }) => ({
+            paddingVertical: 2,
+            opacity: pressed ? 0.75 : 0.55,
+        })}
+        >
+        <Text
+            style={{
+            fontSize: 11,
+            fontWeight: "800",
+            color: "rgba(156,195,255,0.95)",
+            letterSpacing: 0.2,
+            }}
+        >
+            Abrir
+        </Text>
         </Pressable>
-      </View>
-
+        </View>
       <Animated.ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -232,7 +251,7 @@ export function HomeScheduleCarousel({ onOpenRadio }: { onOpenRadio?: () => void
               style={({ pressed }) => ({
                 width: CARD_W,
                 height: CARD_H,
-                borderRadius: RADIUS,
+                borderRadius: "14",
                 padding: 10,
                 flexDirection: "row",
                 alignItems: "center",
@@ -240,13 +259,13 @@ export function HomeScheduleCarousel({ onOpenRadio }: { onOpenRadio?: () => void
 
                 backgroundColor:
                   slot.kind === "now"
-                    ? "rgba(255,255,255,0.12)"
-                    : "rgba(255,255,255,0.08)",
+                    ? "rgba(255,255,255,0.18)"
+                    : "rgba(255,255,255,0.06)",
 
                 borderWidth: 1,
                 borderColor:
                   slot.kind === "now"
-                    ? "rgba(156,195,255,0.38)"
+                    ? "rgba(156,195,255,0.55)"
                     : "rgba(255,255,255,0.10)",
 
                 opacity: pressed ? 0.95 : 1,
@@ -257,11 +276,11 @@ export function HomeScheduleCarousel({ onOpenRadio }: { onOpenRadio?: () => void
                 style={{
                   width: MEDIA_W,
                   height: MEDIA_W,
-                  borderRadius: 14,
+                  borderRadius: 12,
                   backgroundColor:
                     slot.kind === "now"
                       ? "rgba(156,195,255,0.18)"
-                      : "rgba(255,255,255,0.10)",
+                      : "rgba(255,255,255,0.08)",
                   borderWidth: 1,
                   borderColor: "rgba(255,255,255,0.10)",
                   alignItems: "center",
@@ -379,8 +398,8 @@ export function HomeScheduleCarousel({ onOpenRadio }: { onOpenRadio?: () => void
         style={{
           flexDirection: "row",
           justifyContent: "center",
-          gap: 8,
-          marginTop: 4,
+          gap: 6,
+          marginTop: 6,
         }}
       >
         {slots.map((_, i) => {
@@ -392,7 +411,7 @@ export function HomeScheduleCarousel({ onOpenRadio }: { onOpenRadio?: () => void
 
           const opacity = scrollX.interpolate({
             inputRange,
-            outputRange: [0.35, 1, 0.35],
+            outputRange: [0.25, 1, 0.25],
             extrapolate: "clamp",
           });
 
@@ -404,7 +423,7 @@ export function HomeScheduleCarousel({ onOpenRadio }: { onOpenRadio?: () => void
 
           const width = scrollX.interpolate({
             inputRange,
-            outputRange: [6, 16, 6],
+            outputRange: [5, 18, 5],
             extrapolate: "clamp",
           });
 
@@ -413,11 +432,12 @@ export function HomeScheduleCarousel({ onOpenRadio }: { onOpenRadio?: () => void
               key={`dot-${i}`}
               style={{
                 width,
-                height: 6,
+                height: 5,
                 borderRadius: 99,
                 backgroundColor: "#9CC3FF",
                 opacity,
-                transform: [{ scale }],
+                
+                
               }}
             />
           );

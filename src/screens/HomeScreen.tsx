@@ -18,20 +18,7 @@ import { VerseOfTheDay } from "../components/VerseOfTheDay";
 import { spacing } from "../theme";
 import { HomeScheduleCarousel } from "../components/HomeScheduleCarousel";
 
-/** =========================
- * Helpers
- * ========================= */
-function formatFechaCorta(d: Date) {
-  try {
-    return new Intl.DateTimeFormat("es-DO", {
-      weekday: "short",
-      day: "numeric",
-      month: "short",
-    }).format(d);
-  } catch {
-    return d.toDateString();
-  }
-}
+
 
 /** =========================
  * Dark-ready Now Playing (Home)
@@ -152,7 +139,7 @@ export function HomeScreen() {
   const navigation = useNavigation<any>();
   const { now, effectiveNow, status, play, pause } = useRadioPlayer();
 
-  const metaFecha = useMemo(() => formatFechaCorta(effectiveNow), [effectiveNow]);
+  
 
   const isLoading = status === "loading";
   const isPlaying = status === "playing";
@@ -212,53 +199,100 @@ export function HomeScreen() {
         >
           {/* HEADER dentro del Scroll (para overlap del versículo) */}
           <LinearGradient
-            colors={["#1E4E8A", "#234C86"]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={{
-              paddingHorizontal: spacing.lg,
-              paddingTop: spacing.md,
-              paddingBottom: 63,
-            }}
-          >
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "flex-start",
-                justifyContent: "space-between",
-              }}
-            >
-              <View style={{ gap: 2 }}>
-                <Text
-                  style={{
-                    fontSize: 20,
-                    fontWeight: "900",
-                    color: "#fff",
-                    letterSpacing: -0.3,
-                  }}
-                >
-                  miDes Radio
-                </Text>
-                <Text style={{ fontSize: 12, opacity: 0.85, color: "#fff" }}>
-                  Inspirando tu corazón cada día
-                </Text>
-              </View>
+  colors={["#1F5FAE", "#1E4E8A", "#163A6B"]}
+  start={{ x: 0, y: 0 }}
+  end={{ x: 1, y: 1 }}
+  style={{
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.md,
+    paddingBottom: 70,
+    borderBottomLeftRadius: 28,
+    borderBottomRightRadius: 28,
+    overflow: "hidden",
+  }}
+>
+  {/* Watermark (marca) */}
+  <View
+    pointerEvents="none"
+    style={{
+      position: "absolute",
+      right: -10,
+      top: -12,
+      width: 180,
+      height: 180,
+      borderRadius: 999,
+      backgroundColor: "rgba(255,255,255,0.08)",
+      transform: [{ rotate: "18deg" }],
+    }}
+  />
+  <View
+    pointerEvents="none"
+    style={{
+      position: "absolute",
+      right: 18,
+      top: 18,
+      width: 110,
+      height: 110,
+      borderRadius: 999,
+      backgroundColor: "rgba(255,255,255,0.06)",
+    }}
+  />
 
-              <View style={{ alignItems: "flex-end" }}>
-                <Text
-                  style={{
-                    fontSize: 10,
-                    opacity: 0.85,
-                    color: "#fff",
-                    fontWeight: "700",
-                    letterSpacing: 1,
-                  }}
-                >
-                  {metaFecha.toUpperCase()}
-                </Text>
-              </View>
-            </View>
-          </LinearGradient>
+  {/* Header content */}
+  <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
+    <View style={{ gap: 6 }}>
+      <Text
+        style={{
+          fontSize: 22,
+          fontWeight: "900",
+          color: "#FFFFFF",
+          letterSpacing: -0.6,
+        }}
+      >
+        miDes Radio
+      </Text>
+
+      {/* Línea institucional */}
+      <Text
+        style={{
+          fontSize: 12,
+          fontWeight: "700",
+          color: "rgba(255,255,255,0.88)",
+          letterSpacing: 0.2,
+        }}
+      >
+        Es Tiempo de Alzar la Voz
+      </Text>
+
+
+      {/* Línea fina premium */}
+      <View
+        style={{
+          marginTop: 6,
+          height: 1,
+          width: 44,
+          backgroundColor: "rgba(255,255,255,0.35)",
+        }}
+      />
+    </View>
+
+    {/* Chip emisora */}
+    
+      <Text 
+      style={{ 
+        marginTop:8,
+        fontSize: 10, 
+        fontWeight: "500", 
+        color: "rgba(255,255,255,0.72)", 
+        letterSpacing: 0.3 
+        }}
+    >
+        
+        Ministerio Dios es Suficiente
+      </Text>
+    </View>
+  
+</LinearGradient>
 
           {/* CONTENIDO dark */}
           <View
@@ -368,7 +402,7 @@ export function HomeScreen() {
             </View>
 
             {/* NowPlaying */}
-            <View style={{ marginTop: 28 }}>
+            <View style={{ marginTop: 34 }}>
             <HomeScheduleCarousel onOpenRadio={() => navigation.navigate("Radio")} />
             </View>
 
