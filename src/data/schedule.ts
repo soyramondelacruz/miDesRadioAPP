@@ -37,6 +37,24 @@ export const weeklySchedule: WeeklySchedule = {
 
   1: [
     {
+      id: "mon-prayer",
+      title: "Orando al Alba",
+      start: "05:00",
+      end: "06:00",
+    },
+    {
+      id: "mon-music",
+      title: "Música - Adorando al Rey",
+      start: "06:00",
+      end: "07:00",
+    },
+    {
+      id: "mon-music",
+      title: "Devocioanal - Buenos días",
+      start: "07:00",
+      end: "08:00",
+    },
+    {
       id: "mon-music",
       title: "Música Inspiradora",
       start: "08:00",

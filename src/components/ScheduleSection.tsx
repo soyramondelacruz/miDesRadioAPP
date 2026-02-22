@@ -1,74 +1,23 @@
+import React, { useEffect, useMemo, useState } from "react";
 import { View, Text } from "react-native";
-import { useEffect, useState } from "react";
 import { colors, spacing } from "../theme";
-import {
-  weeklySchedule,
-  Program,
-  STATION_TIMEZONE,
-  SCHEDULE_DEBUG,
-} from "../data/schedule";
+import { weeklySchedule, Program, STATION_TIMEZONE } from "../data/schedule";
+import { useRadioPlayer } from "../context/RadioPlayerContext";
 
 function timeToMinutes(time: string) {
-  const [h, m] = time.split(":").map(Number);
-  return h * 60 + m;
+  const [hours, minutes] = time.split(":").map(Number);
+  return hours * 60 + minutes;
 }
 
-function getStationNow() {
-  const baseDate =
-    SCHEDULE_DEBUG.enabled && SCHEDULE_DEBUG.simulatedISOTime
-      ? new Date(SCHEDULE_DEBUG.simulatedISOTime)
-      : new Date();
-
-  const formatter = new Intl.DateTimeFormat("en-US", {
-    timeZone: STATION_TIMEZONE,
-    hour12: false,
-    hour: "2-digit",
-    minute: "2-digit",
-    weekday: "short",
-  });
-
-  const parts = formatter.formatToParts(baseDate);
-
-  const hour = Number(parts.find(p => p.type === "hour")?.value ?? 0);
-  const minute = Number(parts.find(p => p.type === "minute")?.value ?? 0);
-  const weekdayStr = parts.find(p => p.type === "weekday")?.value ?? "Mon";
-
-  const weekdayMap: Record<string, number> = {
-    Sun: 0,
-    Mon: 1,
-    Tue: 2,
-    Wed: 3,
-    Thu: 4,
-    Fri: 5,
-    Sat: 6,
-  };
-
-  return {
-    day: weekdayMap[weekdayStr],
-    minutes: hour * 60 + minute,
-  };
-}
-
-function isNowInProgram(
-  currentMinutes: number,
-  start: number,
-  end: number
-) {
-  if (end > start) {
-    return currentMinutes >= start && currentMinutes < end;
-  }
-
+function isNowInProgram(currentMinutes: number, start: number, end: number) {
+  if (end > start) return currentMinutes >= start && currentMinutes < end;
   // Cruza medianoche
   return currentMinutes >= start || currentMinutes < end;
 }
 
-function getProgramProgress(
-  currentMinutes: number,
-  start: number,
-  end: number
-) {
-  let duration;
-  let elapsed;
+function getProgramProgress(currentMinutes: number, start: number, end: number) {
+  let duration: number;
+  let elapsed: number;
 
   if (end > start) {
     duration = end - start;
@@ -85,27 +34,51 @@ function getProgramProgress(
   return Math.max(0, Math.min(100, percent));
 }
 
-function getRemainingMinutes(
-  currentMinutes: number,
-  start: number,
-  end: number
-) {
-  if (end > start) {
-    return end - currentMinutes;
-  }
-
-  if (currentMinutes >= start) {
-    return 1440 - currentMinutes + end;
-  }
-
+function getRemainingMinutes(currentMinutes: number, start: number, end: number) {
+  if (end > start) return end - currentMinutes;
+  if (currentMinutes >= start) return 1440 - currentMinutes + end;
   return end - currentMinutes;
 }
 
-function getCurrentAndNextProgram(): {
-  current: Program | null;
-  next: Program | null;
-} {
-  const { day, minutes } = getStationNow();
+function getStationNow(baseDate: Date) {
+  // NOTE: Hermes/Intl a veces puede comportarse raro en simulador.
+  // Hacemos fallbacks sólidos.
+  const formatter = new Intl.DateTimeFormat("en-US", {
+    timeZone: STATION_TIMEZONE,
+    hour12: false,
+    hour: "2-digit",
+    minute: "2-digit",
+    weekday: "short",
+  });
+
+  const parts = formatter.formatToParts(baseDate);
+
+  const hourStr = parts.find((p) => p.type === "hour")?.value;
+  const minuteStr = parts.find((p) => p.type === "minute")?.value;
+  const weekdayStr = parts.find((p) => p.type === "weekday")?.value;
+
+  const hour = hourStr != null ? Number(hourStr) : baseDate.getHours();
+  const minute = minuteStr != null ? Number(minuteStr) : baseDate.getMinutes();
+
+  const weekdayMap: Record<string, number> = {
+    Sun: 0,
+    Mon: 1,
+    Tue: 2,
+    Wed: 3,
+    Thu: 4,
+    Fri: 5,
+    Sat: 6,
+  };
+
+  const day =
+    weekdayStr && weekdayMap[weekdayStr] !== undefined
+      ? weekdayMap[weekdayStr]
+      : baseDate.getDay();
+
+  return { day, minutes: hour * 60 + minute };
+}
+
+function getCurrentAndNextProgram(day: number, minutes: number) {
   const todaySchedule = weeklySchedule[day] || [];
 
   let current: Program | null = null;
@@ -137,34 +110,40 @@ function getCurrentAndNextProgram(): {
 }
 
 export function ScheduleSection() {
-  const [currentProgram, setCurrentProgram] = useState<Program | null>(null);
-  const [nextProgram, setNextProgram] = useState<Program | null>(null);
+  const { simulatedISOTime } = useRadioPlayer();
 
+  // ✅ Tick solo para modo REAL TIME (cada minuto).
+  // En modo SIMULATED, NO hacemos interval (el usuario “mueve” el tiempo manualmente).
+  const [tick, setTick] = useState(0);
   useEffect(() => {
-    function update() {
-      const { current, next } = getCurrentAndNextProgram();
-      setCurrentProgram(current);
-      setNextProgram(next);
-    }
+    if (simulatedISOTime) return;
 
-    update();
-    const interval = setInterval(update, 60000);
+    const id = setInterval(() => setTick((t) => t + 1), 60000);
+    return () => clearInterval(id);
+  }, [simulatedISOTime]);
 
-    return () => clearInterval(interval);
-  }, []);
+  const baseDate = useMemo(() => {
+    return simulatedISOTime ? new Date(simulatedISOTime) : new Date();
+    // tick fuerza recalcular cada minuto en modo real
+  }, [simulatedISOTime, tick]);
 
-  const { minutes } = getStationNow();
+  const { day, minutes } = useMemo(() => getStationNow(baseDate), [baseDate]);
 
-  let progress = 0;
-  let remaining = 0;
+  const { current, next } = useMemo(() => {
+    return getCurrentAndNextProgram(day, minutes);
+  }, [day, minutes]);
 
-  if (currentProgram) {
-    const start = timeToMinutes(currentProgram.start);
-    const end = timeToMinutes(currentProgram.end);
+  const { progress, remaining } = useMemo(() => {
+    if (!current) return { progress: 0, remaining: 0 };
 
-    progress = getProgramProgress(minutes, start, end);
-    remaining = getRemainingMinutes(minutes, start, end);
-  }
+    const start = timeToMinutes(current.start);
+    const end = timeToMinutes(current.end);
+
+    return {
+      progress: getProgramProgress(minutes, start, end),
+      remaining: getRemainingMinutes(minutes, start, end),
+    };
+  }, [current, minutes]);
 
   return (
     <View
@@ -195,13 +174,13 @@ export function ScheduleSection() {
             marginTop: 4,
           }}
         >
-          {currentProgram?.title ?? "Música Continua"}
+          {current?.title ?? "Música Continua"}
         </Text>
 
-        {currentProgram && (
+        {current ? (
           <>
             <Text style={{ color: "#184f92", marginTop: 2 }}>
-              {currentProgram.start} – {currentProgram.end}
+              {current.start} – {current.end}
             </Text>
 
             {/* Barra de progreso */}
@@ -224,29 +203,22 @@ export function ScheduleSection() {
             </View>
 
             {/* Tiempo restante */}
-            {remaining > 0 && (
-              <Text
-                style={{
-                  fontSize: 12,
-                  color: "#6b7280",
-                  marginTop: 6,
-                }}
-              >
+            {remaining > 0 ? (
+              <Text style={{ fontSize: 12, color: "#6b7280", marginTop: 6 }}>
                 {remaining === 1
                   ? "Finaliza en 1 minuto"
                   : `Faltan ${remaining} minutos`}
               </Text>
-            )}
+            ) : null}
           </>
+        ) : (
+          <Text style={{ fontSize: 12, color: "#6b7280", marginTop: 6 }}>
+            Programación por bloques. Próximo contenido más abajo.
+          </Text>
         )}
       </View>
 
-      <View
-        style={{
-          height: 1,
-          backgroundColor: "#eaeaea",
-        }}
-      />
+      <View style={{ height: 1, backgroundColor: "#eaeaea" }} />
 
       <View>
         <Text
@@ -268,23 +240,17 @@ export function ScheduleSection() {
             marginTop: 4,
           }}
         >
-          {nextProgram?.title ?? "Sin programación próxima"}
+          {next?.title ?? "Sin programación próxima"}
         </Text>
 
-        {nextProgram && (
+        {next ? (
           <Text style={{ color: "#184f92", marginTop: 2 }}>
-            {nextProgram.start} – {nextProgram.end}
+            {next.start} – {next.end}
           </Text>
-        )}
+        ) : null}
       </View>
 
-      <Text
-        style={{
-          fontSize: 11,
-          opacity: 0.6,
-          marginTop: 8,
-        }}
-      >
+      <Text style={{ fontSize: 11, opacity: 0.6, marginTop: 8 }}>
         Hora oficial: República Dominicana (UTC-4)
       </Text>
     </View>

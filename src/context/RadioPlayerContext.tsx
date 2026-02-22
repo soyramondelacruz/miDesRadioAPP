@@ -5,6 +5,7 @@ import React, {
   useState,
   useEffect,
   useCallback,
+  useMemo,
 } from "react";
 import { Audio } from "expo-av";
 import { RADIO_CONFIG } from "../config/radio.config";
@@ -17,8 +18,14 @@ interface RadioContextType {
   play: () => Promise<void>;
   pause: () => Promise<void>;
   now: ReturnType<typeof useNowPlaying>;
-  appTime: Date;
-  setDebugTime: (date: Date | null) => void;
+
+  // ✅ Debug time (global)
+  simulatedISOTime: string | null;
+  applySimulatedTime: (iso: string) => void;
+  resetSimulatedTime: () => void;
+
+  // ✅ Hora efectiva para UI (Home greeting, etc.)
+  effectiveNow: Date;
 }
 
 const RadioContext = createContext<RadioContextType | null>(null);
@@ -29,40 +36,27 @@ export function RadioPlayerProvider({ children }: { children: React.ReactNode })
   const isReconnectingRef = useRef(false);
 
   const [status, setStatus] = useState<Status>("idle");
+
+  // ✅ Debug time global
+  const [simulatedISOTime, setSimulatedISOTime] = useState<string | null>(null);
+
   const now = useNowPlaying(30000);
 
-  /* ===============================
-     GLOBAL TIME ENGINE
-  =============================== */
+  const effectiveNow = useMemo(() => {
+    return simulatedISOTime ? new Date(simulatedISOTime) : new Date();
+  }, [simulatedISOTime]);
 
-  const [debugTime, setDebugTime] = useState<Date | null>(null);
-  const [appTime, setAppTime] = useState<Date>(new Date());
+  const applySimulatedTime = useCallback((iso: string) => {
+    setSimulatedISOTime(iso);
+  }, []);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setAppTime((prev) => {
-        if (debugTime) {
-          // avanzar 1 minuto simulado
-          return new Date(prev.getTime() + 60000);
-        }
-        return new Date();
-      });
-    }, 60000);
-
-    return () => clearInterval(interval);
-  }, [debugTime]);
-
-  // si se activa debug, sincronizamos inmediatamente
-  useEffect(() => {
-    if (debugTime) {
-      setAppTime(debugTime);
-    }
-  }, [debugTime]);
+  const resetSimulatedTime = useCallback(() => {
+    setSimulatedISOTime(null);
+  }, []);
 
   /* ===============================
-     AUDIO MODE
+     AUDIO MODE (BACKGROUND REAL)
   =============================== */
-
   useEffect(() => {
     Audio.setAudioModeAsync({
       staysActiveInBackground: true,
@@ -73,23 +67,23 @@ export function RadioPlayerProvider({ children }: { children: React.ReactNode })
   }, []);
 
   /* ===============================
-     LOAD & CREATE SOUND
+     STATUS LISTENER
   =============================== */
-
-  const onPlaybackStatusUpdate = (statusUpdate: any) => {
-    if (!statusUpdate.isLoaded) {
-      if (statusUpdate.error) {
+  const onPlaybackStatusUpdate = useCallback((statusUpdate: any) => {
+    if (!statusUpdate?.isLoaded) {
+      if (statusUpdate?.error) {
         console.log("Stream error:", statusUpdate.error);
-        reconnect();
       }
       return;
     }
 
-    if (statusUpdate.isPlaying) {
-      setStatus("playing");
-    }
-  };
+    if (statusUpdate.isPlaying) setStatus("playing");
+    else setStatus((prev) => (prev === "loading" ? "paused" : prev));
+  }, []);
 
+  /* ===============================
+     LOAD & CREATE SOUND
+  =============================== */
   const createSound = useCallback(async () => {
     const { sound } = await Audio.Sound.createAsync(
       { uri: RADIO_CONFIG.STREAM_URL },
@@ -98,12 +92,11 @@ export function RadioPlayerProvider({ children }: { children: React.ReactNode })
     );
 
     soundRef.current = sound;
-  }, []);
+  }, [onPlaybackStatusUpdate]);
 
   /* ===============================
-     RECONNECT
+     RECONNECT LOGIC
   =============================== */
-
   const reconnect = useCallback(async () => {
     if (isReconnectingRef.current) return;
 
@@ -128,7 +121,7 @@ export function RadioPlayerProvider({ children }: { children: React.ReactNode })
         } finally {
           isReconnectingRef.current = false;
         }
-      }, 3000);
+      }, 2500);
     } catch (err) {
       console.log("Reconnect outer error:", err);
       setStatus("error");
@@ -139,8 +132,7 @@ export function RadioPlayerProvider({ children }: { children: React.ReactNode })
   /* ===============================
      PLAY
   =============================== */
-
-  const play = async () => {
+  const play = useCallback(async () => {
     if (status === "playing" || status === "loading") return;
 
     try {
@@ -151,34 +143,32 @@ export function RadioPlayerProvider({ children }: { children: React.ReactNode })
       }
 
       await soundRef.current?.playAsync();
+      setStatus("playing");
     } catch (err) {
       console.log("Play error:", err);
       setStatus("error");
+      reconnect();
     }
-  };
+  }, [status, createSound, reconnect]);
 
   /* ===============================
      PAUSE
   =============================== */
-
-  const pause = async () => {
+  const pause = useCallback(async () => {
     try {
       await soundRef.current?.pauseAsync();
       setStatus("paused");
     } catch (err) {
       console.log("Pause error:", err);
     }
-  };
+  }, []);
 
   /* ===============================
      CLEANUP
   =============================== */
-
   useEffect(() => {
     return () => {
-      if (reconnectTimeoutRef.current) {
-        clearTimeout(reconnectTimeoutRef.current);
-      }
+      if (reconnectTimeoutRef.current) clearTimeout(reconnectTimeoutRef.current);
       soundRef.current?.unloadAsync();
     };
   }, []);
@@ -190,8 +180,10 @@ export function RadioPlayerProvider({ children }: { children: React.ReactNode })
         play,
         pause,
         now,
-        appTime,
-        setDebugTime,
+        simulatedISOTime,
+        applySimulatedTime,
+        resetSimulatedTime,
+        effectiveNow,
       }}
     >
       {children}
