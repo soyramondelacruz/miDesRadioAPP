@@ -12,6 +12,7 @@ import { spacing } from "../theme";
 import { weeklySchedule, Program, STATION_TIMEZONE } from "../data/schedule";
 import { useRadioPlayer } from "../context/RadioPlayerContext";
 
+
 type SlotKind = "now" | "next" | "later";
 
 type Slot = {
@@ -153,6 +154,7 @@ function kindLabel(kind: SlotKind) {
   return "LUEGO";
 }
 
+
 export function HomeScheduleCarousel({ onOpenRadio }: { onOpenRadio?: () => void }) {
   const navigation = useNavigation<any>();
   const { effectiveNow, now } = useRadioPlayer();
@@ -207,7 +209,7 @@ export function HomeScheduleCarousel({ onOpenRadio }: { onOpenRadio?: () => void
             style={{
             fontSize: 11,
             fontWeight: "800",
-            color: "rgba(156,195,255,0.95)",
+            color: "rgba(156,195,255,0.78)",
             letterSpacing: 0.2,
             }}
         >

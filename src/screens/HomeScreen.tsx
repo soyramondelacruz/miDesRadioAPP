@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import {
   ScrollView,
   Text,
@@ -12,13 +12,12 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
+import { Feather } from "@expo/vector-icons";
 
 import { useRadioPlayer } from "../context/RadioPlayerContext";
 import { VerseOfTheDay } from "../components/VerseOfTheDay";
 import { spacing } from "../theme";
 import { HomeScheduleCarousel } from "../components/HomeScheduleCarousel";
-
-
 
 /** =========================
  * Dark-ready Now Playing (Home)
@@ -135,11 +134,177 @@ function NowPlayingMini({
   );
 }
 
+function QuickActionCard({
+  label,
+  title,
+  subtitle,
+  icon,
+  onPress,
+  variant = "glass",
+}: {
+  label: string;
+  title: string;
+  subtitle: string;
+  icon: keyof typeof Feather.glyphMap;
+  onPress: () => void;
+  variant?: "glass" | "donate";
+}) {
+  const isDonate = variant === "donate";
+
+  // ✅ colores
+  const donateAccent = "#C56B22"; // naranja miDes
+  const normalAccent = "#9CC3FF"; // azul claro
+
+  const Container = ({ children }: { children: React.ReactNode }) =>
+    isDonate ? (
+      // ✅ DONAR (azul institucional con acento naranja)
+      <LinearGradient
+        colors={["#1B2F4A", "#13243A"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={{
+          borderRadius: 18,
+          paddingVertical: 14,
+          paddingHorizontal: 14,
+          minHeight: 98,
+          justifyContent: "center",
+          borderWidth: 1,
+          borderColor: "rgba(255,255,255,0.12)",
+        }}
+      >
+        {/* Acento: barra naranja súper sutil */}
+        <View
+          pointerEvents="none"
+          style={{
+            position: "absolute",
+            left: 0,
+            top: 0,
+            bottom: 0,
+            width: 5,
+            backgroundColor: donateAccent,
+            opacity: 0.9,
+          }}
+        />
+        {children}
+      </LinearGradient>
+    ) : (
+      <View
+        style={{
+          flex: 1,
+          borderRadius: 16,
+          padding: spacing.md,
+          backgroundColor: "rgba(255,255,255,0.08)",
+          borderWidth: 1,
+          borderColor: "rgba(255,255,255,0.10)",
+        }}
+      >
+        {children}
+      </View>
+    );
+
+  return (
+    <Pressable
+      onPress={onPress}
+      style={({ pressed }) => ({
+        flex: 1,
+        minHeight: 118,
+        borderRadius: 16,
+        overflow: "hidden",
+        opacity: pressed ? 0.92 : 1,
+        transform: [{ scale: pressed ? 0.985 : 1 }],
+      })}
+    >
+      <Container>
+        {/* top row: icon + chevron */}
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <View
+            style={{
+              width: 42,
+              height: 42,
+              borderRadius: 21,
+              alignItems: "center",
+              justifyContent: "center",
+              backgroundColor: isDonate
+                ? "rgba(197,107,34,0.18)"
+                : "rgba(156,195,255,0.12)",
+              borderWidth: 1,
+              borderColor: isDonate
+                ? "rgba(197,107,34,0.35)"
+                : "rgba(156,195,255,0.18)",
+            }}
+          >
+            <Feather
+              name={icon}
+              size={isDonate ? 19 : 18}
+              color={isDonate ? donateAccent : normalAccent}
+            />
+          </View>
+
+          <View style={{ opacity: isDonate ? 0.95 : 0.95 }}>
+            <Feather
+              name="chevron-right"
+              size={18}
+              color={isDonate ? donateAccent : normalAccent}
+            />
+          </View>
+        </View>
+
+        {/* text stack */}
+        <View style={{ marginTop: 8, gap: 3 }}>
+          <Text
+            style={{
+              fontSize: 11,
+              fontWeight: "900",
+              letterSpacing: 1.2,
+              color: isDonate
+                ? "rgba(255,255,255,0.82)"
+                : "rgba(255,255,255,0.72)",
+            }}
+            numberOfLines={1}
+          >
+            {label}
+          </Text>
+
+          <Text
+            style={{
+              fontSize: 14,
+              fontWeight: "800",
+              color: "#fff",
+              letterSpacing: -0.2,
+            }}
+            numberOfLines={1}
+          >
+            {title}
+          </Text>
+
+          <Text
+            style={{
+              fontSize: 12,
+              fontWeight: "500",
+              color: isDonate
+                ? "rgba(255,255,255,0.92)"
+                : "rgba(255,255,255,0.70)",
+                lineHeight: 16,
+            }}
+            numberOfLines={2}
+          >
+            {subtitle}
+          </Text>
+        </View>
+      </Container>
+    </Pressable>
+  );
+}
+
 export function HomeScreen() {
   const navigation = useNavigation<any>();
-  const { now, effectiveNow, status, play, pause } = useRadioPlayer();
-
-  
+  const { now, status, play, pause } = useRadioPlayer();
 
   const isLoading = status === "loading";
   const isPlaying = status === "playing";
@@ -199,100 +364,99 @@ export function HomeScreen() {
         >
           {/* HEADER dentro del Scroll (para overlap del versículo) */}
           <LinearGradient
-  colors={["#1F5FAE", "#1E4E8A", "#163A6B"]}
-  start={{ x: 0, y: 0 }}
-  end={{ x: 1, y: 1 }}
-  style={{
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.md,
-    paddingBottom: 70,
-    borderBottomLeftRadius: 28,
-    borderBottomRightRadius: 28,
-    overflow: "hidden",
-  }}
->
-  {/* Watermark (marca) */}
-  <View
-    pointerEvents="none"
-    style={{
-      position: "absolute",
-      right: -10,
-      top: -12,
-      width: 180,
-      height: 180,
-      borderRadius: 999,
-      backgroundColor: "rgba(255,255,255,0.08)",
-      transform: [{ rotate: "18deg" }],
-    }}
-  />
-  <View
-    pointerEvents="none"
-    style={{
-      position: "absolute",
-      right: 18,
-      top: 18,
-      width: 110,
-      height: 110,
-      borderRadius: 999,
-      backgroundColor: "rgba(255,255,255,0.06)",
-    }}
-  />
+            colors={["#1F5FAE", "#1E4E8A", "#163A6B"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={{
+              paddingHorizontal: spacing.lg,
+              paddingTop: spacing.md,
+              paddingBottom: 70,
+              borderBottomLeftRadius: 28,
+              borderBottomRightRadius: 28,
+              overflow: "hidden",
+            }}
+          >
+            {/* Watermark (marca) */}
+            <View
+              pointerEvents="none"
+              style={{
+                position: "absolute",
+                right: -10,
+                top: -12,
+                width: 180,
+                height: 180,
+                borderRadius: 999,
+                backgroundColor: "rgba(255,255,255,0.08)",
+                transform: [{ rotate: "18deg" }],
+              }}
+            />
+            <View
+              pointerEvents="none"
+              style={{
+                position: "absolute",
+                right: 18,
+                top: 18,
+                width: 110,
+                height: 110,
+                borderRadius: 999,
+                backgroundColor: "rgba(255,255,255,0.06)",
+              }}
+            />
 
-  {/* Header content */}
-  <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
-    <View style={{ gap: 6 }}>
-      <Text
-        style={{
-          fontSize: 22,
-          fontWeight: "900",
-          color: "#FFFFFF",
-          letterSpacing: -0.6,
-        }}
-      >
-        miDes Radio
-      </Text>
+            {/* Header content */}
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "flex-start",
+              }}
+            >
+              <View style={{ gap: 6 }}>
+                <Text
+                  style={{
+                    fontSize: 22,
+                    fontWeight: "900",
+                    color: "#FFFFFF",
+                    letterSpacing: -0.6,
+                  }}
+                >
+                  miDes Radio
+                </Text>
 
-      {/* Línea institucional */}
-      <Text
-        style={{
-          fontSize: 12,
-          fontWeight: "700",
-          color: "rgba(255,255,255,0.88)",
-          letterSpacing: 0.2,
-        }}
-      >
-        Es Tiempo de Alzar la Voz
-      </Text>
+                <Text
+                  style={{
+                    fontSize: 12,
+                    fontWeight: "700",
+                    color: "rgba(255,255,255,0.88)",
+                    letterSpacing: 0.2,
+                  }}
+                >
+                  Es Tiempo de Alzar la Voz
+                </Text>
 
+                <View
+                  style={{
+                    marginTop: 6,
+                    height: 1,
+                    width: 44,
+                    backgroundColor: "rgba(255,255,255,0.35)",
+                  }}
+                />
+              </View>
 
-      {/* Línea fina premium */}
-      <View
-        style={{
-          marginTop: 6,
-          height: 1,
-          width: 44,
-          backgroundColor: "rgba(255,255,255,0.35)",
-        }}
-      />
-    </View>
-
-    {/* Chip emisora */}
-    
-      <Text 
-      style={{ 
-        marginTop:8,
-        fontSize: 10, 
-        fontWeight: "500", 
-        color: "rgba(255,255,255,0.72)", 
-        letterSpacing: 0.3 
-        }}
-    >
-        
-        Ministerio Dios es Suficiente
-      </Text>
-    </View>
-  
-</LinearGradient>
+              <Text
+                style={{
+                  marginTop: 8,
+                  fontSize: 10,
+                  fontWeight: "500",
+                  color: "rgba(255,255,255,0.72)",
+                  letterSpacing: 0.3,
+                }}
+              >
+                Ministerio Dios es Suficiente
+              </Text>
+            </View>
+          </LinearGradient>
 
           {/* CONTENIDO dark */}
           <View
@@ -327,15 +491,10 @@ export function HomeScreen() {
                       width: 92,
                       height: 92,
                       borderRadius: 46,
-
-                      // borde + glow sutil
                       borderWidth: 2,
                       borderColor: "rgba(245, 158, 80, 0.65)",
                       backgroundColor: "rgba(245, 158, 80, 0.10)",
-
-                      // detrás del botón
                       zIndex: 0,
-
                       transform: [
                         {
                           scale: pulse.interpolate({
@@ -352,7 +511,6 @@ export function HomeScreen() {
                   />
                 )}
 
-                {/* Botón */}
                 <Pressable
                   onPress={handleFabPress}
                   style={({ pressed }) => ({
@@ -363,20 +521,13 @@ export function HomeScreen() {
                     alignItems: "center",
                     justifyContent: "center",
                     opacity: pressed ? 0.92 : 1,
-
                     borderWidth: 2,
                     borderColor: "#B2CEEE",
-
-                    // iOS shadow
                     shadowColor: "#000",
                     shadowOpacity: 0.18,
                     shadowRadius: 18,
                     shadowOffset: { width: 0, height: 10 },
-
-                    // Android
                     elevation: 16,
-
-                    // arriba del halo
                     zIndex: 1,
                   })}
                 >
@@ -397,16 +548,17 @@ export function HomeScreen() {
                 </Pressable>
               </View>
 
-              {/* spacer para que el FAB no tape lo siguiente */}
               <View style={{ height: 22 }} />
             </View>
 
-            {/* NowPlaying */}
+            {/* Programación (Carrusel) */}
             <View style={{ marginTop: 34 }}>
-            <HomeScheduleCarousel onOpenRadio={() => navigation.navigate("Radio")} />
+              <HomeScheduleCarousel
+                onOpenRadio={() => navigation.navigate("Radio")}
+              />
             </View>
 
-            {/* Accesos rápidos */}
+            {/* Accesos rápidos — premium grid */}
             <View style={{ gap: spacing.sm, marginTop: 2 }}>
               <Text
                 style={{
@@ -420,105 +572,40 @@ export function HomeScreen() {
               </Text>
 
               <View style={{ flexDirection: "row", gap: spacing.sm }}>
-                <Pressable
+                <QuickActionCard
+                  label="ESCUCHAR"
+                  title="Radio en vivo"
+                  subtitle="Alabanza • Oración"
+                  icon="radio"
                   onPress={() => navigation.navigate("Radio")}
-                  style={{
-                    flex: 1,
-                    backgroundColor: "rgba(255,255,255,0.08)",
-                    borderRadius: 16,
-                    padding: spacing.md,
-                    borderWidth: 1,
-                    borderColor: "rgba(255,255,255,0.10)",
-                  }}
-                >
-                  <Text style={{ fontSize: 12, opacity: 0.8, fontWeight: "900", color: "#fff" }}>
-                    ESCUCHAR
-                  </Text>
-                  <Text style={{ fontSize: 15, fontWeight: "900", marginTop: 6, color: "#fff" }}>
-                    Radio en vivo
-                  </Text>
-                  <Text style={{ fontSize: 12, opacity: 0.75, marginTop: 4, color: "#fff" }}>
-                    Alabanza • Oración • Reflexiones
-                  </Text>
-                </Pressable>
+                />
 
-                <Pressable
+                <QuickActionCard
+                  label="CRECER"
+                  title="Podcasts"
+                  subtitle="Mensajes • Devocionales"
+                  icon="mic"
                   onPress={() => navigation.navigate("Podcasts")}
-                  style={{
-                    flex: 1,
-                    backgroundColor: "rgba(255,255,255,0.08)",
-                    borderRadius: 16,
-                    padding: spacing.md,
-                    borderWidth: 1,
-                    borderColor: "rgba(255,255,255,0.10)",
-                  }}
-                >
-                  <Text style={{ fontSize: 12, opacity: 0.8, fontWeight: "900", color: "#fff" }}>
-                    CRECER
-                  </Text>
-                  <Text style={{ fontSize: 15, fontWeight: "900", marginTop: 6, color: "#fff" }}>
-                    Podcasts
-                  </Text>
-                  <Text style={{ fontSize: 12, opacity: 0.75, marginTop: 4, color: "#fff" }}>
-                    Mensajes y devocionales
-                  </Text>
-                </Pressable>
+                />
               </View>
 
               <View style={{ flexDirection: "row", gap: spacing.sm }}>
-                <Pressable
+                <QuickActionCard
+                  label="ORACIÓN"
+                  title="Pide oración"
+                  subtitle="Comparte tu necesidad"
+                  icon="message-circle"
                   onPress={() => navigation.navigate("Prayer")}
-                  style={{
-                    flex: 1,
-                    backgroundColor: "rgba(255,255,255,0.08)",
-                    borderRadius: 16,
-                    padding: spacing.md,
-                    borderWidth: 1,
-                    borderColor: "rgba(255,255,255,0.10)",
-                  }}
-                >
-                  <Text style={{ fontSize: 12, opacity: 0.8, fontWeight: "900", color: "#fff" }}>
-                    ORACIÓN
-                  </Text>
-                  <Text style={{ fontSize: 15, fontWeight: "900", marginTop: 6, color: "#fff" }}>
-                    Pide oración
-                  </Text>
-                  <Text style={{ fontSize: 12, opacity: 0.75, marginTop: 4, color: "#fff" }}>
-                    Comparte tu necesidad o testimonio
-                  </Text>
-                </Pressable>
+                />
 
-                <Pressable
+                <QuickActionCard
+                  label="DONAR"
+                  title="Apoya"
+                  subtitle="Haz crecer la misión"
+                  icon="heart"
+                  variant="donate"
                   onPress={() => navigation.navigate("Give")}
-                  style={{
-                    flex: 1,
-                    borderRadius: 16,
-                    padding: spacing.md,
-                    overflow: "hidden",
-                  }}
-                >
-                  <LinearGradient
-                    colors={["#C56B22", "#B6561B"]}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
-                    style={{
-                      borderRadius: 16,
-                      padding: spacing.md,
-                      minHeight: 92,
-                      justifyContent: "center",
-                    }}
-                  >
-                    <Text style={{ fontSize: 12, opacity: 0.95, fontWeight: "900", color: "#fff" }}>
-                      DONAR
-                    </Text>
-                    <Text style={{ fontSize: 15, fontWeight: "900", marginTop: 6, color: "#fff" }}>
-                      Apoya
-                    </Text>
-                    <Text style={{ fontSize: 12, opacity: 0.95, marginTop: 4, color: "#fff" }}>
-                      Ayuda a que esta misión crezca
-                    </Text>
-                  </LinearGradient>
-                </Pressable>
+                />
               </View>
             </View>
 
@@ -538,7 +625,13 @@ export function HomeScreen() {
               </Text>
 
               <TouchableOpacity onPress={() => navigation.navigate("Give")}>
-                <Text style={{ fontSize: 13, fontWeight: "900", color: "#9CC3FF" }}>
+                <Text
+                  style={{
+                    fontSize: 13,
+                    fontWeight: "900",
+                    color: "#9CC3FF",
+                  }}
+                >
                   Apoyar la misión →
                 </Text>
               </TouchableOpacity>
