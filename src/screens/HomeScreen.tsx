@@ -1,22 +1,14 @@
-// src/screens/HomeScreen.tsx
-
 import React, { useMemo } from "react";
-import { ScrollView, Text, View, Pressable, TouchableOpacity } from "react-native";
+import { ScrollView, Text, View, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
+import { Feather } from "@expo/vector-icons";
 
 import { useRadioPlayer } from "../context/RadioPlayerContext";
 import { VerseOfTheDay } from "../components/VerseOfTheDay";
 import { NowPlayingCard } from "../components/NowPlayingCard";
 import { spacing } from "../theme";
-import { DAILY_PHRASES } from "../data/dailyPhrases";
-
-function getSaludoPorHora(hora: number) {
-  if (hora < 12) return "Buenos días";
-  if (hora < 18) return "Buenas tardes";
-  return "Buenas noches";
-}
 
 function formatFechaCorta(d: Date) {
   try {
@@ -44,139 +36,172 @@ function formatHora(d: Date) {
   }
 }
 
-// Day-of-year index (0..365)
-function getDayOfYear(d: Date) {
-  const start = new Date(d.getFullYear(), 0, 0);
-  const diff = d.getTime() - start.getTime();
-  const oneDay = 1000 * 60 * 60 * 24;
-  return Math.floor(diff / oneDay);
-}
-
 export function HomeScreen() {
-  const { now, effectiveNow } = useRadioPlayer();
+  const { now, effectiveNow, status, play, pause } = useRadioPlayer();
   const navigation = useNavigation<any>();
-
-  const saludo = useMemo(
-    () => getSaludoPorHora(effectiveNow.getHours()),
-    [effectiveNow]
-  );
 
   const metaFecha = useMemo(() => formatFechaCorta(effectiveNow), [effectiveNow]);
   const metaHora = useMemo(() => formatHora(effectiveNow), [effectiveNow]);
 
-  const phrase = useMemo(() => {
-    const idx = getDayOfYear(effectiveNow) % DAILY_PHRASES.length;
-    return DAILY_PHRASES[idx];
-  }, [effectiveNow]);
-
-  const hasNowPlaying = !!now.data;
+  const isPlaying = status === "playing";
+  const onPressPlay = async () => {
+    if (isPlaying) await pause();
+    else await play();
+  };
 
   return (
-    <SafeAreaView style={{ flex: 1 }} edges={["top"]}>
-      <LinearGradient colors={["#B2CEEE", "#FAF8FA"]} style={{ flex: 1 }}>
-        <ScrollView
-          contentContainerStyle={{
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#0E1624" }} edges={["top"]}>
+      {/* Scroll único que contiene header + body */}
+      <ScrollView
+        style={{ flex: 1, backgroundColor: "#0E1624" }}
+        contentContainerStyle={{
+          paddingBottom: spacing.xl,
+        }}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* HEADER (dentro del scroll) */}
+        <LinearGradient
+          colors={["#184f92", "#163D6E"]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={{
             paddingHorizontal: spacing.lg,
-            paddingBottom: spacing.xl,
-            gap: spacing.md,
+            paddingTop: spacing.md,
+            paddingBottom: 62, // deja espacio para el overlap
           }}
-          showsVerticalScrollIndicator={false}
         >
-          {/* HEADER — Brand moment (curva + gradiente suave) */}
-          <View style={{ marginHorizontal: -spacing.lg }}>
-            <LinearGradient
-              colors={["rgba(178,206,238,0.95)", "rgba(178,206,238,0.55)", "rgba(250,248,250,0.0)"]}
-              start={{ x: 0.5, y: 0 }}
-              end={{ x: 0.5, y: 1 }}
-              style={{
-                paddingHorizontal: spacing.lg,
-                paddingTop: spacing.md,
-                paddingBottom: spacing.lg,
-                borderBottomLeftRadius: 28,
-                borderBottomRightRadius: 28,
-              }}
-            >
-              <View style={{ gap: 8 }}>
-                <View
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "flex-start",
+              justifyContent: "space-between",
+            }}
+          >
+            <View style={{ flex: 1 }}>
+              <Text
+                style={{
+                  fontSize: 22,
+                  fontWeight: "900",
+                  color: "#fff",
+                  letterSpacing: -0.3,
+                }}
+              >
+                miDes Radio
+              </Text>
+
+              {/* Play redondo debajo del título, a la izquierda del subtítulo */}
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  marginTop: 10,
+                  gap: 10,
+                }}
+              >
+                <Pressable
+                  onPress={onPressPlay}
                   style={{
-                    flexDirection: "row",
-                    alignItems: "flex-end",
-                    justifyContent: "space-between",
+                    width: 38,
+                    height: 38,
+                    borderRadius: 19,
+                    backgroundColor: "rgba(255,255,255,0.14)",
+                    borderWidth: 1,
+                    borderColor: "rgba(255,255,255,0.18)",
+                    alignItems: "center",
+                    justifyContent: "center",
                   }}
                 >
-                  <Text
-                    style={{
-                      fontSize: 30,
-                      fontWeight: "900",
-                      color: "#0E1624",
-                      letterSpacing: -0.6,
-                    }}
-                  >
-                    {saludo}
-                  </Text>
+                  <Feather
+                    name={isPlaying ? "pause" : "play"}
+                    size={16}
+                    color="#fff"
+                  />
+                </Pressable>
 
-                  <View style={{ alignItems: "flex-end" }}>
-                    <Text style={{ fontSize: 12, opacity: 0.68, color: "#0E1624" }}>
-                      {metaFecha}
-                    </Text>
-                    <Text style={{ fontSize: 12, opacity: 0.68, color: "#0E1624" }}>
-                      {metaHora}
-                    </Text>
-                  </View>
-                </View>
-
-                {/* Frase diaria (sin card) */}
-                <View style={{ gap: 6 }}>
-                  <Text
-                    style={{
-                      fontSize: 14,
-                      lineHeight: 20,
-                      color: "#38455c",
-                      opacity: 0.92,
-                    }}
-                  >
-                    {phrase.text}
-                  </Text>
-
-                  {/* Categoría debajo, pequeña */}
-                  <Text
-                    style={{
-                      fontSize: 11,
-                      letterSpacing: 1.2,
-                      textTransform: "uppercase",
-                      color: "#184f92",
-                      opacity: 0.9,
-                      fontWeight: "800",
-                    }}
-                  >
-                    {phrase.category}
-                  </Text>
-                </View>
+                <Text style={{ fontSize: 13, color: "rgba(255,255,255,0.85)" }}>
+                  Inspirando tu corazón cada día
+                </Text>
               </View>
-            </LinearGradient>
+            </View>
+
+            <View style={{ alignItems: "flex-end", paddingTop: 2 }}>
+              <Text style={{ fontSize: 12, color: "rgba(255,255,255,0.75)" }}>
+                {metaFecha}
+              </Text>
+              <Text style={{ fontSize: 12, color: "rgba(255,255,255,0.75)" }}>
+                {metaHora}
+              </Text>
+            </View>
           </View>
+        </LinearGradient>
 
-          {/* Versículo del día (protagonista) */}
-          <VerseOfTheDay compact />
-
-          {/* Ahora Sonando (glass/compact, no compite) */}
-          {hasNowPlaying ? (
+        {/* CONTENEDOR DEL BODY */}
+        <View
+          style={{
+            paddingHorizontal: spacing.lg,
+            backgroundColor: "#0E1624",
+          }}
+        >
+          {/* ✅ Card flotante: AHORA sí sube encima del header */}
+          <View
+            style={{
+              marginTop: -34, // 👈 overlap REAL con el header
+              zIndex: 20,
+              elevation: 20,
+            }}
+          >
             <View
               style={{
-                backgroundColor: "rgba(255,255,255,0.60)",
-                borderRadius: 18,
+                borderRadius: 20,
+                backgroundColor: "rgba(255,255,255,0.96)",
                 borderWidth: 1,
-                borderColor: "rgba(0,0,0,0.06)",
+                borderColor: "rgba(0,0,0,0.08)",
+                shadowColor: "#000",
+                shadowOpacity: 0.16,
+                shadowRadius: 18,
+                shadowOffset: { width: 0, height: 12 },
                 overflow: "hidden",
               }}
             >
-              <NowPlayingCard data={now.data!} variant="compact" />
+              <VerseOfTheDay compact />
+            </View>
+          </View>
+
+          {/* Espacio mínimo entre cards */}
+          <View style={{ height: spacing.md }} />
+
+          {/* Now Playing (legible sobre dark) */}
+          {now.data ? (
+            <View
+              style={{
+                borderRadius: 20,
+                backgroundColor: "rgba(255,255,255,0.92)",
+                borderWidth: 1,
+                borderColor: "rgba(0,0,0,0.08)",
+                shadowColor: "#000",
+                shadowOpacity: 0.10,
+                shadowRadius: 14,
+                shadowOffset: { width: 0, height: 8 },
+                elevation: 6,
+                overflow: "hidden",
+              }}
+            >
+              <NowPlayingCard data={now.data} variant="compact" />
             </View>
           ) : null}
 
+          <View style={{ height: spacing.lg }} />
+
           {/* Accesos rápidos */}
           <View style={{ gap: spacing.sm }}>
-            <Text style={{ fontSize: 12, fontWeight: "900", opacity: 0.55 }}>
+            <Text
+              style={{
+                fontSize: 12,
+                fontWeight: "900",
+                color: "rgba(255,255,255,0.55)",
+                letterSpacing: 0.6,
+              }}
+            >
               ACCESOS RÁPIDOS
             </Text>
 
@@ -185,20 +210,20 @@ export function HomeScreen() {
                 onPress={() => navigation.navigate("Radio")}
                 style={{
                   flex: 1,
-                  backgroundColor: "rgba(255,255,255,0.9)",
+                  backgroundColor: "rgba(255,255,255,0.10)",
                   borderRadius: 16,
                   padding: spacing.md,
                   borderWidth: 1,
-                  borderColor: "rgba(0,0,0,0.06)",
+                  borderColor: "rgba(255,255,255,0.10)",
                 }}
               >
-                <Text style={{ fontSize: 12, opacity: 0.7, fontWeight: "900" }}>
+                <Text style={{ fontSize: 12, color: "rgba(255,255,255,0.65)", fontWeight: "900" }}>
                   ESCUCHAR
                 </Text>
-                <Text style={{ fontSize: 15, fontWeight: "900", marginTop: 6, color: "#0E1624" }}>
+                <Text style={{ fontSize: 15, color: "#fff", fontWeight: "900", marginTop: 6 }}>
                   Radio en vivo
                 </Text>
-                <Text style={{ fontSize: 12, opacity: 0.7, marginTop: 4 }}>
+                <Text style={{ fontSize: 12, color: "rgba(255,255,255,0.70)", marginTop: 4 }}>
                   Alabanza • Oración • Reflexiones
                 </Text>
               </Pressable>
@@ -207,20 +232,20 @@ export function HomeScreen() {
                 onPress={() => navigation.navigate("Podcasts")}
                 style={{
                   flex: 1,
-                  backgroundColor: "rgba(255,255,255,0.9)",
+                  backgroundColor: "rgba(255,255,255,0.10)",
                   borderRadius: 16,
                   padding: spacing.md,
                   borderWidth: 1,
-                  borderColor: "rgba(0,0,0,0.06)",
+                  borderColor: "rgba(255,255,255,0.10)",
                 }}
               >
-                <Text style={{ fontSize: 12, opacity: 0.7, fontWeight: "900" }}>
+                <Text style={{ fontSize: 12, color: "rgba(255,255,255,0.65)", fontWeight: "900" }}>
                   CRECER
                 </Text>
-                <Text style={{ fontSize: 15, fontWeight: "900", marginTop: 6, color: "#0E1624" }}>
+                <Text style={{ fontSize: 15, color: "#fff", fontWeight: "900", marginTop: 6 }}>
                   Podcasts
                 </Text>
-                <Text style={{ fontSize: 12, opacity: 0.7, marginTop: 4 }}>
+                <Text style={{ fontSize: 12, color: "rgba(255,255,255,0.70)", marginTop: 4 }}>
                   Mensajes y devocionales
                 </Text>
               </Pressable>
@@ -231,21 +256,21 @@ export function HomeScreen() {
                 onPress={() => navigation.navigate("Prayer")}
                 style={{
                   flex: 1,
-                  backgroundColor: "rgba(255,255,255,0.9)",
+                  backgroundColor: "rgba(255,255,255,0.10)",
                   borderRadius: 16,
                   padding: spacing.md,
                   borderWidth: 1,
-                  borderColor: "rgba(0,0,0,0.06)",
+                  borderColor: "rgba(255,255,255,0.10)",
                 }}
               >
-                <Text style={{ fontSize: 12, opacity: 0.7, fontWeight: "900" }}>
-                  CONECTAR
+                <Text style={{ fontSize: 12, color: "rgba(255,255,255,0.65)", fontWeight: "900" }}>
+                  ORACIÓN
                 </Text>
-                <Text style={{ fontSize: 15, fontWeight: "900", marginTop: 6, color: "#0E1624" }}>
-                  Oración
+                <Text style={{ fontSize: 15, color: "#fff", fontWeight: "900", marginTop: 6 }}>
+                  Pide oración
                 </Text>
-                <Text style={{ fontSize: 12, opacity: 0.7, marginTop: 4 }}>
-                  Pide oración o comparte un testimonio
+                <Text style={{ fontSize: 12, color: "rgba(255,255,255,0.70)", marginTop: 4 }}>
+                  Comparte tu necesidad o testimonio
                 </Text>
               </Pressable>
 
@@ -258,23 +283,23 @@ export function HomeScreen() {
                 }}
               >
                 <LinearGradient
-                  colors={["#184f92", "#38455c"]}
+                  colors={["#e68637", "#b85a18"]}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 1 }}
                   style={{
                     borderRadius: 16,
                     padding: spacing.md,
-                    minHeight: 92,
+                    minHeight: 104,
                     justifyContent: "center",
                   }}
                 >
-                  <Text style={{ fontSize: 12, opacity: 0.92, fontWeight: "900", color: "#fff" }}>
+                  <Text style={{ fontSize: 12, opacity: 0.95, fontWeight: "900", color: "#fff" }}>
                     DONAR
                   </Text>
                   <Text style={{ fontSize: 15, fontWeight: "900", marginTop: 6, color: "#fff" }}>
                     Apoya
                   </Text>
-                  <Text style={{ fontSize: 12, opacity: 0.92, marginTop: 4, color: "#fff" }}>
+                  <Text style={{ fontSize: 12, opacity: 0.95, marginTop: 4, color: "#fff" }}>
                     Ayuda a que esta misión crezca
                   </Text>
                 </LinearGradient>
@@ -282,29 +307,9 @@ export function HomeScreen() {
             </View>
           </View>
 
-          {/* Footer sutil */}
-          <View
-            style={{
-              marginTop: spacing.lg,
-              paddingTop: spacing.md,
-              borderTopWidth: 1,
-              borderColor: "rgba(0,0,0,0.06)",
-              alignItems: "center",
-              gap: 6,
-            }}
-          >
-            <Text style={{ fontSize: 12, opacity: 0.65 }}>
-              miDes Radio • Jesús • Esperanza • Vida
-            </Text>
-
-            <TouchableOpacity onPress={() => navigation.navigate("Give")}>
-              <Text style={{ fontSize: 13, fontWeight: "900", color: "#184f92" }}>
-                Apoyar la misión →
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </ScrollView>
-      </LinearGradient>
+          <View style={{ height: spacing.xl }} />
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
