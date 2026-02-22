@@ -1,15 +1,28 @@
-import { View, Text, TextInput, Pressable } from "react-native";
-import { useState } from "react";
-import { SCHEDULE_DEBUG } from "../data/schedule";
+import React, { useState } from "react";
+import { View, Text, TouchableOpacity } from "react-native";
+
+interface Props {
+  currentTime: Date;
+  onApply: (date: Date) => void;
+  onReset: () => void;
+}
 
 export function DebugTimePanel({
-  onTimeChange,
-}: {
-  onTimeChange: () => void;
-}) {
-  const [value, setValue] = useState("");
+  currentTime,
+  onApply,
+  onReset,
+}: Props) {
+  const [localTime, setLocalTime] = useState<Date>(currentTime);
 
-  if (!__DEV__) return null;
+  function addHour() {
+    const updated = new Date(localTime.getTime() + 60 * 60 * 1000);
+    setLocalTime(updated);
+  }
+
+  function subtractHour() {
+    const updated = new Date(localTime.getTime() - 60 * 60 * 1000);
+    setLocalTime(updated);
+  }
 
   return (
     <View
@@ -17,57 +30,42 @@ export function DebugTimePanel({
         marginTop: 20,
         padding: 16,
         borderRadius: 12,
-        backgroundColor: "#fff3cd",
-        gap: 12,
+        backgroundColor: "rgba(0,0,0,0.05)",
       }}
     >
-      <Text style={{ fontWeight: "700" }}>
-        ⏱ Debug Hora (Rep. Dominicana)
+      <Text style={{ marginBottom: 8, fontWeight: "600" }}>
+        Debug Time
       </Text>
 
-      <TextInput
-        placeholder="2026-02-23T11:59:00"
-        value={value}
-        onChangeText={setValue}
-        style={{
-          borderWidth: 1,
-          borderColor: "#ccc",
-          padding: 8,
-          borderRadius: 8,
-        }}
-      />
+      <Text style={{ marginBottom: 12 }}>
+        {localTime.toLocaleString()}
+      </Text>
 
-      <Pressable
-        onPress={() => {
-          SCHEDULE_DEBUG.simulatedISOTime = value;
-          onTimeChange(); // 👈 AQUÍ
-        }}
-        style={{
-          backgroundColor: "#184f92",
-          padding: 10,
-          borderRadius: 8,
-        }}
-      >
-        <Text style={{ color: "white", textAlign: "center" }}>
-          Aplicar Hora
-        </Text>
-      </Pressable>
+      <TouchableOpacity onPress={addHour}>
+        <Text>+1 Hour</Text>
+      </TouchableOpacity>
 
-      <Pressable
-        onPress={() => {
-          SCHEDULE_DEBUG.simulatedISOTime = null;
-          onTimeChange(); // 👈 AQUÍ
-        }}
-        style={{
-          backgroundColor: "#999",
-          padding: 10,
-          borderRadius: 8,
-        }}
+      <TouchableOpacity onPress={subtractHour}>
+        <Text>-1 Hour</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        onPress={() => onApply(localTime)}
+        style={{ marginTop: 12 }}
       >
-        <Text style={{ color: "white", textAlign: "center" }}>
-          Volver a Hora Real
+        <Text style={{ fontWeight: "600" }}>
+          Apply Time
         </Text>
-      </Pressable>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        onPress={onReset}
+        style={{ marginTop: 8 }}
+      >
+        <Text style={{ opacity: 0.6 }}>
+          Reset to Real Time
+        </Text>
+      </TouchableOpacity>
     </View>
   );
 }

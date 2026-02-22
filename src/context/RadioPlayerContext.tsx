@@ -17,6 +17,8 @@ interface RadioContextType {
   play: () => Promise<void>;
   pause: () => Promise<void>;
   now: ReturnType<typeof useNowPlaying>;
+  appTime: Date;
+  setDebugTime: (date: Date | null) => void;
 }
 
 const RadioContext = createContext<RadioContextType | null>(null);
@@ -30,8 +32,37 @@ export function RadioPlayerProvider({ children }: { children: React.ReactNode })
   const now = useNowPlaying(30000);
 
   /* ===============================
-     AUDIO MODE (BACKGROUND REAL)
+     GLOBAL TIME ENGINE
   =============================== */
+
+  const [debugTime, setDebugTime] = useState<Date | null>(null);
+  const [appTime, setAppTime] = useState<Date>(new Date());
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setAppTime((prev) => {
+        if (debugTime) {
+          // avanzar 1 minuto simulado
+          return new Date(prev.getTime() + 60000);
+        }
+        return new Date();
+      });
+    }, 60000);
+
+    return () => clearInterval(interval);
+  }, [debugTime]);
+
+  // si se activa debug, sincronizamos inmediatamente
+  useEffect(() => {
+    if (debugTime) {
+      setAppTime(debugTime);
+    }
+  }, [debugTime]);
+
+  /* ===============================
+     AUDIO MODE
+  =============================== */
+
   useEffect(() => {
     Audio.setAudioModeAsync({
       staysActiveInBackground: true,
@@ -44,19 +75,7 @@ export function RadioPlayerProvider({ children }: { children: React.ReactNode })
   /* ===============================
      LOAD & CREATE SOUND
   =============================== */
-  const createSound = useCallback(async () => {
-    const { sound } = await Audio.Sound.createAsync(
-      { uri: RADIO_CONFIG.STREAM_URL },
-      { shouldPlay: false },
-      onPlaybackStatusUpdate
-    );
 
-    soundRef.current = sound;
-  }, []);
-
-  /* ===============================
-     STATUS LISTENER
-  =============================== */
   const onPlaybackStatusUpdate = (statusUpdate: any) => {
     if (!statusUpdate.isLoaded) {
       if (statusUpdate.error) {
@@ -71,9 +90,20 @@ export function RadioPlayerProvider({ children }: { children: React.ReactNode })
     }
   };
 
+  const createSound = useCallback(async () => {
+    const { sound } = await Audio.Sound.createAsync(
+      { uri: RADIO_CONFIG.STREAM_URL },
+      { shouldPlay: false },
+      onPlaybackStatusUpdate
+    );
+
+    soundRef.current = sound;
+  }, []);
+
   /* ===============================
-     RECONNECT LOGIC
+     RECONNECT
   =============================== */
+
   const reconnect = useCallback(async () => {
     if (isReconnectingRef.current) return;
 
@@ -109,6 +139,7 @@ export function RadioPlayerProvider({ children }: { children: React.ReactNode })
   /* ===============================
      PLAY
   =============================== */
+
   const play = async () => {
     if (status === "playing" || status === "loading") return;
 
@@ -129,6 +160,7 @@ export function RadioPlayerProvider({ children }: { children: React.ReactNode })
   /* ===============================
      PAUSE
   =============================== */
+
   const pause = async () => {
     try {
       await soundRef.current?.pauseAsync();
@@ -141,18 +173,27 @@ export function RadioPlayerProvider({ children }: { children: React.ReactNode })
   /* ===============================
      CLEANUP
   =============================== */
+
   useEffect(() => {
     return () => {
       if (reconnectTimeoutRef.current) {
         clearTimeout(reconnectTimeoutRef.current);
       }
-
       soundRef.current?.unloadAsync();
     };
   }, []);
 
   return (
-    <RadioContext.Provider value={{ status, play, pause, now }}>
+    <RadioContext.Provider
+      value={{
+        status,
+        play,
+        pause,
+        now,
+        appTime,
+        setDebugTime,
+      }}
+    >
       {children}
     </RadioContext.Provider>
   );
