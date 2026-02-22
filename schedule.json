@@ -4,118 +4,82 @@
     {
       "day": "Monday",
       "items": [
-        {
-          "id": "mon-0600",
-          "title": "Alba de Adoración",
-          "type": "music",
-          "startTime": "06:00",
-          "endTime": "09:00",
-          "description": "Música cristiana y mensajes cortos.",
-          "tags": ["adoración", "música"]
-        },
-        {
-          "id": "mon-0900",
-          "title": "Mañanas de Fe",
-          "type": "program",
-          "startTime": "09:00",
-          "endTime": "11:00",
-          "description": "Reflexión, comunidad y esperanza.",
-          "tags": ["devocional", "comunidad"]
-        }
+        { "id": "mon-00", "title": "Música Instrumental", "type": "music", "startTime": "00:00", "endTime": "01:00", "description": "Instrumental nocturna.", "tags": ["instrumental"] },
+        { "id": "mon-01", "title": "Música Instrumental", "type": "music", "startTime": "01:00", "endTime": "02:00", "description": "Instrumental nocturna.", "tags": ["instrumental"] },
+        { "id": "mon-02", "title": "Reflexión Nocturna", "type": "program", "startTime": "02:00", "endTime": "03:00", "description": "Reflexiones profundas.", "tags": ["reflexion"] },
+        { "id": "mon-03", "title": "Reflexión Nocturna", "type": "program", "startTime": "03:00", "endTime": "04:00", "description": "Reflexiones profundas.", "tags": ["reflexion"] },
+        { "id": "mon-04", "title": "Alabanza Matutina", "type": "music", "startTime": "04:00", "endTime": "05:00", "description": "Adoración para iniciar el día.", "tags": ["alabanza"] },
+        { "id": "mon-05", "title": "Alabanza Matutina", "type": "music", "startTime": "05:00", "endTime": "06:00", "description": "Adoración para iniciar el día.", "tags": ["alabanza"] },
+        { "id": "mon-06", "title": "Devocional Diario", "type": "live", "startTime": "06:00", "endTime": "07:00", "description": "Devocional en vivo.", "tags": ["devocional"] },
+        { "id": "mon-07", "title": "Mañanas de Fe", "type": "live", "startTime": "07:00", "endTime": "08:00", "description": "Programa en vivo.", "tags": ["enseñanza"] },
+        { "id": "mon-08", "title": "Mañanas de Fe", "type": "live", "startTime": "08:00", "endTime": "09:00", "description": "Continuación.", "tags": ["enseñanza"] },
+        { "id": "mon-09", "title": "Música Inspiradora", "type": "music", "startTime": "09:00", "endTime": "10:00", "description": "Cristiana contemporánea.", "tags": ["musica"] },
+        { "id": "mon-10", "title": "Música Inspiradora", "type": "music", "startTime": "10:00", "endTime": "11:00", "description": "Cristiana contemporánea.", "tags": ["musica"] },
+        { "id": "mon-11", "title": "Tiempo de Oración", "type": "live", "startTime": "11:00", "endTime": "12:00", "description": "Oración en vivo.", "tags": ["oracion"] },
+        { "id": "mon-12", "title": "Reflexión del Mediodía", "type": "program", "startTime": "12:00", "endTime": "13:00", "description": "Mensaje breve.", "tags": ["reflexion"] },
+        { "id": "mon-13", "title": "Música de Esperanza", "type": "music", "startTime": "13:00", "endTime": "14:00", "description": "Selección musical.", "tags": ["musica"] },
+        { "id": "mon-14", "title": "Podcast Vida y Fe", "type": "program", "startTime": "14:00", "endTime": "15:00", "description": "Podcast grabado.", "tags": ["podcast"] },
+        { "id": "mon-15", "title": "Podcast Vida y Fe", "type": "program", "startTime": "15:00", "endTime": "16:00", "description": "Continuación.", "tags": ["podcast"] },
+        { "id": "mon-16", "title": "Alabanza Vespertina", "type": "music", "startTime": "16:00", "endTime": "17:00", "description": "Música para la tarde.", "tags": ["alabanza"] },
+        { "id": "mon-17", "title": "Reflexión Familiar", "type": "program", "startTime": "17:00", "endTime": "18:00", "description": "Mensaje para la familia.", "tags": ["familia"] },
+        { "id": "mon-18", "title": "Oración y Clamor", "type": "live", "startTime": "18:00", "endTime": "19:00", "description": "Intercesión en vivo.", "tags": ["oracion"] },
+        { "id": "mon-19", "title": "Música Nocturna", "type": "music", "startTime": "19:00", "endTime": "20:00", "description": "Adoración suave.", "tags": ["musica"] },
+        { "id": "mon-20", "title": "Estudio Bíblico", "type": "program", "startTime": "20:00", "endTime": "21:00", "description": "Enseñanza bíblica.", "tags": ["biblia"] },
+        { "id": "mon-21", "title": "Estudio Bíblico", "type": "program", "startTime": "21:00", "endTime": "22:00", "description": "Continuación.", "tags": ["biblia"] },
+        { "id": "mon-22", "title": "Música Instrumental", "type": "music", "startTime": "22:00", "endTime": "23:00", "description": "Instrumental nocturna.", "tags": ["instrumental"] },
+        { "id": "mon-23", "title": "Música Instrumental", "type": "music", "startTime": "23:00", "endTime": "00:00", "description": "Cierre del día.", "tags": ["instrumental"] }
       ]
     },
+
     {
       "day": "Tuesday",
       "items": [
-        {
-          "id": "tue-0600",
-          "title": "Alba de Adoración",
-          "type": "music",
-          "startTime": "06:00",
-          "endTime": "09:00",
-          "description": "Música cristiana y mensajes cortos.",
-          "tags": ["adoración", "música"]
-        },
-        {
-          "id": "tue-0900",
-          "title": "Mañanas de Fe",
-          "type": "program",
-          "startTime": "09:00",
-          "endTime": "11:00",
-          "description": "Reflexión, comunidad y esperanza.",
-          "tags": ["devocional", "comunidad"]
-        }
+        { "id": "tue-00", "title": "Música Instrumental", "type": "music", "startTime": "00:00", "endTime": "01:00", "description": "Instrumental nocturna.", "tags": ["instrumental"] },
+        { "id": "tue-01", "title": "Reflexión Nocturna", "type": "program", "startTime": "01:00", "endTime": "02:00", "description": "Reflexiones profundas.", "tags": ["reflexion"] },
+        { "id": "tue-02", "title": "Reflexión Nocturna", "type": "program", "startTime": "02:00", "endTime": "03:00", "description": "Reflexiones profundas.", "tags": ["reflexion"] },
+        { "id": "tue-03", "title": "Alabanza Matutina", "type": "music", "startTime": "03:00", "endTime": "04:00", "description": "Adoración para iniciar el día.", "tags": ["alabanza"] },
+        { "id": "tue-04", "title": "Alabanza Matutina", "type": "music", "startTime": "04:00", "endTime": "05:00", "description": "Adoración para iniciar el día.", "tags": ["alabanza"] },
+        { "id": "tue-05", "title": "Devocional Diario", "type": "live", "startTime": "05:00", "endTime": "06:00", "description": "Devocional en vivo.", "tags": ["devocional"] },
+        { "id": "tue-06", "title": "Mañanas de Fe", "type": "live", "startTime": "06:00", "endTime": "07:00", "description": "Programa en vivo.", "tags": ["enseñanza"] },
+        { "id": "tue-07", "title": "Música Inspiradora", "type": "music", "startTime": "07:00", "endTime": "08:00", "description": "Cristiana contemporánea.", "tags": ["musica"] },
+        { "id": "tue-08", "title": "Música Inspiradora", "type": "music", "startTime": "08:00", "endTime": "09:00", "description": "Cristiana contemporánea.", "tags": ["musica"] },
+        { "id": "tue-09", "title": "Tiempo de Oración", "type": "live", "startTime": "09:00", "endTime": "10:00", "description": "Oración en vivo.", "tags": ["oracion"] },
+        { "id": "tue-10", "title": "Podcast Vida y Fe", "type": "program", "startTime": "10:00", "endTime": "11:00", "description": "Podcast grabado.", "tags": ["podcast"] },
+        { "id": "tue-11", "title": "Música de Esperanza", "type": "music", "startTime": "11:00", "endTime": "12:00", "description": "Selección musical.", "tags": ["musica"] },
+        { "id": "tue-12", "title": "Reflexión del Mediodía", "type": "program", "startTime": "12:00", "endTime": "13:00", "description": "Mensaje breve.", "tags": ["reflexion"] },
+        { "id": "tue-13", "title": "Alabanza Vespertina", "type": "music", "startTime": "13:00", "endTime": "14:00", "description": "Música para la tarde.", "tags": ["alabanza"] },
+        { "id": "tue-14", "title": "Reflexión Familiar", "type": "program", "startTime": "14:00", "endTime": "15:00", "description": "Mensaje para la familia.", "tags": ["familia"] },
+        { "id": "tue-15", "title": "Oración y Clamor", "type": "live", "startTime": "15:00", "endTime": "16:00", "description": "Intercesión en vivo.", "tags": ["oracion"] },
+        { "id": "tue-16", "title": "Estudio Bíblico", "type": "program", "startTime": "16:00", "endTime": "17:00", "description": "Enseñanza bíblica.", "tags": ["biblia"] },
+        { "id": "tue-17", "title": "Estudio Bíblico", "type": "program", "startTime": "17:00", "endTime": "18:00", "description": "Continuación.", "tags": ["biblia"] },
+        { "id": "tue-18", "title": "Música Nocturna", "type": "music", "startTime": "18:00", "endTime": "19:00", "description": "Adoración suave.", "tags": ["musica"] },
+        { "id": "tue-19", "title": "Música Nocturna", "type": "music", "startTime": "19:00", "endTime": "20:00", "description": "Adoración suave.", "tags": ["musica"] },
+        { "id": "tue-20", "title": "Música Instrumental", "type": "music", "startTime": "20:00", "endTime": "21:00", "description": "Instrumental nocturna.", "tags": ["instrumental"] },
+        { "id": "tue-21", "title": "Música Instrumental", "type": "music", "startTime": "21:00", "endTime": "22:00", "description": "Instrumental nocturna.", "tags": ["instrumental"] },
+        { "id": "tue-22", "title": "Música Instrumental", "type": "music", "startTime": "22:00", "endTime": "23:00", "description": "Instrumental nocturna.", "tags": ["instrumental"] },
+        { "id": "tue-23", "title": "Música Instrumental", "type": "music", "startTime": "23:00", "endTime": "00:00", "description": "Cierre del día.", "tags": ["instrumental"] }
       ]
     },
+
     {
       "day": "Wednesday",
-      "items": [
-        {
-          "id": "wed-0600",
-          "title": "Alba de Adoración",
-          "type": "music",
-          "startTime": "06:00",
-          "endTime": "09:00",
-          "description": "Música cristiana y mensajes cortos.",
-          "tags": ["adoración", "música"]
-        }
-      ]
+      "items": []
     },
     {
       "day": "Thursday",
-      "items": [
-        {
-          "id": "thu-0600",
-          "title": "Alba de Adoración",
-          "type": "music",
-          "startTime": "06:00",
-          "endTime": "09:00",
-          "description": "Música cristiana y mensajes cortos.",
-          "tags": ["adoración", "música"]
-        }
-      ]
+      "items": []
     },
     {
       "day": "Friday",
-      "items": [
-        {
-          "id": "fri-0600",
-          "title": "Alba de Adoración",
-          "type": "music",
-          "startTime": "06:00",
-          "endTime": "09:00",
-          "description": "Música cristiana y mensajes cortos.",
-          "tags": ["adoración", "música"]
-        }
-      ]
+      "items": []
     },
     {
       "day": "Saturday",
-      "items": [
-        {
-          "id": "sat-0800",
-          "title": "Especial para Jóvenes",
-          "type": "program",
-          "startTime": "08:00",
-          "endTime": "10:00",
-          "description": "Contenido fresco para adolescentes y jóvenes.",
-          "tags": ["jóvenes"]
-        }
-      ]
+      "items": []
     },
     {
       "day": "Sunday",
-      "items": [
-        {
-          "id": "sun-0900",
-          "title": "Culto en Casa",
-          "type": "program",
-          "startTime": "09:00",
-          "endTime": "11:30",
-          "description": "Predicación, adoración y oración.",
-          "tags": ["culto", "predicación"]
-        }
-      ]
+      "items": []
     }
   ]
 }

@@ -1,129 +1,177 @@
-import { View, Text, Animated, Easing } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
-import { Feather } from "@expo/vector-icons";
-import { useEffect, useRef } from "react";
+// src/components/NowPlayingCard.tsx
+import React, { useMemo } from "react";
+import { View, Text } from "react-native";
+import type { NowPlayingPayload } from "../types/content.types";
 import { colors, spacing } from "../theme";
 
-interface Props {
-  data: {
-    title: string;
-    host?: string;
-    isLive?: boolean;
-  };
+type Variant = "default" | "compact";
+
+type Props = {
+  data: NowPlayingPayload;
+  variant?: Variant;
+};
+
+function safeText(v?: string | null) {
+  const s = (v ?? "").trim();
+  return s.length ? s : null;
 }
 
-export function NowPlayingCard({ data }: Props) {
-  const pulse = useRef(new Animated.Value(1)).current;
+export function NowPlayingCard({ data, variant = "default" }: Props) {
+  const title = useMemo(() => {
+    // Prefer show title, then track title, then station
+    return (
+      safeText(data.show?.title) ??
+      safeText(data.track?.title) ??
+      safeText(data.station) ??
+      "miDes Radio"
+    );
+  }, [data]);
 
-  useEffect(() => {
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulse, {
-          toValue: 1.2,
-          duration: 900,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
-        }),
-        Animated.timing(pulse, {
-          toValue: 1,
-          duration: 900,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
-        }),
-      ])
-    ).start();
-  }, []);
+  const subtitle = useMemo(() => {
+    // Prefer show host, then track artist
+    const host = safeText(data.show?.host);
+    const artist = safeText(data.track?.artist);
 
-  return (
-    <LinearGradient
-      colors={["rgba(255,255,255,0.97)", "rgba(240,245,255,0.92)"]}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      style={{
-        flexDirection: "row",
-        alignItems: "center",
-        borderRadius: 24,
-        paddingVertical: spacing.md,
-        paddingHorizontal: spacing.md,
-        shadowColor: "#000",
-        shadowOpacity: 0.08,
-        shadowRadius: 18,
-        elevation: 5,
-      }}
-    >
-      {/* Icono circular */}
-      <View
-        style={{
-          width: 48,
-          height: 48,
-          borderRadius: 24,
-          backgroundColor: colors.primary + "18",
-          alignItems: "center",
-          justifyContent: "center",
-          marginRight: spacing.md,
-        }}
-      >
-        <Feather name="radio" size={20} color={colors.primary} />
-      </View>
+    if (host) return `con ${host}`;
+    if (artist) return artist;
 
-      {/* Texto */}
-      <View style={{ flex: 1 }}>
-        <Text
-          style={{
-            fontSize: 16,
-            fontWeight: "600",
-            color: "#1f2c4c",
-          }}
-          numberOfLines={1}
-        >
-          {data.title}
-        </Text>
+    return "En vivo";
+  }, [data]);
 
-        {data.host && (
-          <Text
-            style={{
-              marginTop: 2,
-              fontSize: 13,
-              color: "#6b7280",
-            }}
-            numberOfLines={1}
-          >
-            con {data.host}
-          </Text>
-        )}
-      </View>
+  const isLive = !!data.isLive;
 
-      {/* LIVE Indicator a la derecha */}
-      {data.isLive && (
+  if (variant === "compact") {
+    return (
       <View
         style={{
           flexDirection: "row",
           alignItems: "center",
-          marginLeft: spacing.sm,
+          gap: spacing.md,
+          padding: spacing.md,
         }}
       >
-        <Animated.View
+        {/* Icon bubble */}
+        <View
+          style={{
+            width: 42,
+            height: 42,
+            borderRadius: 14,
+            backgroundColor: "rgba(24,79,146,0.10)",
+            alignItems: "center",
+            justifyContent: "center",
+            borderWidth: 1,
+            borderColor: "rgba(0,0,0,0.06)",
+          }}
+        >
+          <View
+            style={{
+              width: 18,
+              height: 18,
+              borderRadius: 9,
+              borderWidth: 2,
+              borderColor: "rgba(24,79,146,0.55)",
+            }}
+          />
+        </View>
+
+        {/* Text */}
+        <View style={{ flex: 1, minWidth: 0 }}>
+          <Text
+            numberOfLines={1}
+            style={{
+              fontSize: 15,
+              fontWeight: "700",
+              color: "#0E1624",
+            }}
+          >
+            {title}
+          </Text>
+
+          <Text
+            numberOfLines={1}
+            style={{
+              marginTop: 2,
+              fontSize: 12,
+              opacity: 0.72,
+              color: "#0E1624",
+              fontWeight: "600",
+            }}
+          >
+            {subtitle}
+          </Text>
+        </View>
+
+        {/* Live badge */}
+        <View style={{ alignItems: "flex-end", gap: 6 }}>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+            <View
+              style={{
+                width: 6,
+                height: 6,
+                borderRadius: 3,
+                backgroundColor: isLive ? "#EF4444" : "rgba(0,0,0,0.25)",
+              }}
+            />
+            <Text
+              style={{
+                fontSize: 11,
+                fontWeight: "900",
+                letterSpacing: 1,
+                color: isLive ? "#EF4444" : "rgba(0,0,0,0.45)",
+              }}
+            >
+              {isLive ? "LIVE" : "OFFLINE"}
+            </Text>
+          </View>
+        </View>
+      </View>
+    );
+  }
+
+  // default variant (si lo usas en otra pantalla)
+  return (
+    <View
+      style={{
+        backgroundColor: "rgba(255,255,255,0.92)",
+        borderRadius: 18,
+        padding: spacing.lg,
+        borderWidth: 1,
+        borderColor: "rgba(0,0,0,0.06)",
+        gap: 8,
+      }}
+    >
+      <Text style={{ fontSize: 12, fontWeight: "900", opacity: 0.6 }}>
+        AHORA SONANDO
+      </Text>
+
+      <Text style={{ fontSize: 18, fontWeight: "900", color: "#0E1624" }}>
+        {title}
+      </Text>
+
+      <Text style={{ fontSize: 13, opacity: 0.75, fontWeight: "600" }}>
+        {subtitle}
+      </Text>
+
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+        <View
           style={{
             width: 8,
             height: 8,
             borderRadius: 4,
-            backgroundColor: "#ff3b30",
-            transform: [{ scale: pulse }],
-            marginRight: 5,
+            backgroundColor: isLive ? "#EF4444" : "rgba(0,0,0,0.25)",
           }}
         />
         <Text
           style={{
-            fontSize: 11,
-            fontWeight: "700",
-            color: "#ff3b30",
+            fontSize: 10,
+            fontWeight: "900",
             letterSpacing: 1,
+            color: isLive ? "#EF4444" : "rgba(0,0,0,0.45)",
           }}
         >
-          LIVE
+          {isLive ? "EN VIVO" : "OFFLINE"}
         </Text>
       </View>
-      )}
-    </LinearGradient>
+    </View>
   );
 }

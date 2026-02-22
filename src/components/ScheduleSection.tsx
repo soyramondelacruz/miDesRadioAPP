@@ -11,7 +11,7 @@ function timeToMinutes(time: string) {
 
 function isNowInProgram(currentMinutes: number, start: number, end: number) {
   if (end > start) return currentMinutes >= start && currentMinutes < end;
-  // Cruza medianoche
+  // cruza medianoche
   return currentMinutes >= start || currentMinutes < end;
 }
 
@@ -23,6 +23,7 @@ function getProgramProgress(currentMinutes: number, start: number, end: number) 
     duration = end - start;
     elapsed = currentMinutes - start;
   } else {
+    // cruza medianoche
     duration = 1440 - start + end;
     elapsed =
       currentMinutes >= start
@@ -36,13 +37,13 @@ function getProgramProgress(currentMinutes: number, start: number, end: number) 
 
 function getRemainingMinutes(currentMinutes: number, start: number, end: number) {
   if (end > start) return end - currentMinutes;
+
   if (currentMinutes >= start) return 1440 - currentMinutes + end;
+
   return end - currentMinutes;
 }
 
 function getStationNow(baseDate: Date) {
-  // NOTE: Hermes/Intl a veces puede comportarse raro en simulador.
-  // Hacemos fallbacks sólidos.
   const formatter = new Intl.DateTimeFormat("en-US", {
     timeZone: STATION_TIMEZONE,
     hour12: false,
@@ -53,12 +54,9 @@ function getStationNow(baseDate: Date) {
 
   const parts = formatter.formatToParts(baseDate);
 
-  const hourStr = parts.find((p) => p.type === "hour")?.value;
-  const minuteStr = parts.find((p) => p.type === "minute")?.value;
-  const weekdayStr = parts.find((p) => p.type === "weekday")?.value;
-
-  const hour = hourStr != null ? Number(hourStr) : baseDate.getHours();
-  const minute = minuteStr != null ? Number(minuteStr) : baseDate.getMinutes();
+  const hour = Number(parts.find((p) => p.type === "hour")?.value ?? 0);
+  const minute = Number(parts.find((p) => p.type === "minute")?.value ?? 0);
+  const weekdayStr = parts.find((p) => p.type === "weekday")?.value ?? "Mon";
 
   const weekdayMap: Record<string, number> = {
     Sun: 0,
@@ -70,12 +68,7 @@ function getStationNow(baseDate: Date) {
     Sat: 6,
   };
 
-  const day =
-    weekdayStr && weekdayMap[weekdayStr] !== undefined
-      ? weekdayMap[weekdayStr]
-      : baseDate.getDay();
-
-  return { day, minutes: hour * 60 + minute };
+  return { day: weekdayMap[weekdayStr], minutes: hour * 60 + minute };
 }
 
 function getCurrentAndNextProgram(day: number, minutes: number) {
@@ -96,6 +89,7 @@ function getCurrentAndNextProgram(day: number, minutes: number) {
     }
   }
 
+  // si no hay "current", buscamos el próximo (el primer start > now)
   if (!current) {
     for (let i = 0; i < todaySchedule.length; i++) {
       const start = timeToMinutes(todaySchedule[i].start);
@@ -109,41 +103,52 @@ function getCurrentAndNextProgram(day: number, minutes: number) {
   return { current, next };
 }
 
+function formatRemainingLabel(remaining: number) {
+  if (remaining <= 0) return "Finaliza ahora";
+  if (remaining === 1) return "Finaliza en 1 minuto";
+  return `Faltan ${remaining} minutos`;
+}
+
 export function ScheduleSection() {
   const { simulatedISOTime } = useRadioPlayer();
 
-  // ✅ Tick solo para modo REAL TIME (cada minuto).
-  // En modo SIMULATED, NO hacemos interval (el usuario “mueve” el tiempo manualmente).
-  const [tick, setTick] = useState(0);
-  useEffect(() => {
-    if (simulatedISOTime) return;
-
-    const id = setInterval(() => setTick((t) => t + 1), 60000);
-    return () => clearInterval(id);
-  }, [simulatedISOTime]);
-
+  // ✅ baseDate real o simulado
   const baseDate = useMemo(() => {
     return simulatedISOTime ? new Date(simulatedISOTime) : new Date();
-    // tick fuerza recalcular cada minuto en modo real
-  }, [simulatedISOTime, tick]);
+  }, [simulatedISOTime]);
 
-  const { day, minutes } = useMemo(() => getStationNow(baseDate), [baseDate]);
+  // ✅ "tick" para que el progreso se recalule cuando el tiempo avanza
+  const [tick, setTick] = useState(0);
 
-  const { current, next } = useMemo(() => {
-    return getCurrentAndNextProgram(day, minutes);
+  // ✅ hora estación derivada del baseDate (RD timezone)
+  const stationNow = useMemo(() => getStationNow(baseDate), [baseDate, tick]);
+  const { day, minutes } = stationNow;
+
+  const [currentProgram, setCurrentProgram] = useState<Program | null>(null);
+  const [nextProgram, setNextProgram] = useState<Program | null>(null);
+
+  // ✅ recalcula inmediatamente al cambiar hora simulada (o al avanzar tick)
+  useEffect(() => {
+    const { current, next } = getCurrentAndNextProgram(day, minutes);
+    setCurrentProgram(current);
+    setNextProgram(next);
   }, [day, minutes]);
 
-  const { progress, remaining } = useMemo(() => {
-    if (!current) return { progress: 0, remaining: 0 };
+  // ✅ refresca cada 60s para progreso/tiempo real
+  useEffect(() => {
+    const interval = setInterval(() => setTick((t) => t + 1), 60_000);
+    return () => clearInterval(interval);
+  }, []);
 
-    const start = timeToMinutes(current.start);
-    const end = timeToMinutes(current.end);
+  let progress = 0;
+  let remaining = 0;
 
-    return {
-      progress: getProgramProgress(minutes, start, end),
-      remaining: getRemainingMinutes(minutes, start, end),
-    };
-  }, [current, minutes]);
+  if (currentProgram) {
+    const start = timeToMinutes(currentProgram.start);
+    const end = timeToMinutes(currentProgram.end);
+    progress = getProgramProgress(minutes, start, end);
+    remaining = getRemainingMinutes(minutes, start, end);
+  }
 
   return (
     <View
@@ -154,12 +159,13 @@ export function ScheduleSection() {
         gap: spacing.md,
       }}
     >
+      {/* EN ESTE MOMENTO */}
       <View>
         <Text
           style={{
             fontSize: 12,
             color: colors.primary,
-            fontWeight: "600",
+            fontWeight: "700",
             letterSpacing: 1,
           }}
         >
@@ -169,18 +175,25 @@ export function ScheduleSection() {
         <Text
           style={{
             fontSize: 18,
-            fontWeight: "700",
+            fontWeight: "800",
             color: "#38455c",
-            marginTop: 4,
+            marginTop: 6,
           }}
         >
-          {current?.title ?? "Música Continua"}
+          {currentProgram?.title ?? "Música Continua"}
         </Text>
 
-        {current ? (
+        {/* Host (si existe) */}
+        {currentProgram?.host ? (
+          <Text style={{ color: "#184f92", marginTop: 4, fontSize: 13, fontWeight: "600" }}>
+            {currentProgram.host}
+          </Text>
+        ) : null}
+
+        {currentProgram ? (
           <>
-            <Text style={{ color: "#184f92", marginTop: 2 }}>
-              {current.start} – {current.end}
+            <Text style={{ color: "#184f92", marginTop: 4 }}>
+              {currentProgram.start} – {currentProgram.end}
             </Text>
 
             {/* Barra de progreso */}
@@ -188,7 +201,7 @@ export function ScheduleSection() {
               style={{
                 marginTop: 10,
                 height: 6,
-                backgroundColor: "#e0e0e0",
+                backgroundColor: "rgba(0,0,0,0.08)",
                 borderRadius: 4,
                 overflow: "hidden",
               }}
@@ -203,29 +216,33 @@ export function ScheduleSection() {
             </View>
 
             {/* Tiempo restante */}
-            {remaining > 0 ? (
-              <Text style={{ fontSize: 12, color: "#6b7280", marginTop: 6 }}>
-                {remaining === 1
-                  ? "Finaliza en 1 minuto"
-                  : `Faltan ${remaining} minutos`}
-              </Text>
-            ) : null}
+            <Text
+              style={{
+                fontSize: 12,
+                color: "#6b7280",
+                marginTop: 8,
+              }}
+            >
+              {formatRemainingLabel(remaining)}
+            </Text>
           </>
         ) : (
           <Text style={{ fontSize: 12, color: "#6b7280", marginTop: 6 }}>
-            Programación por bloques. Próximo contenido más abajo.
+            Sin programación activa. (Modo música continua)
           </Text>
         )}
       </View>
 
-      <View style={{ height: 1, backgroundColor: "#eaeaea" }} />
+      {/* Divider */}
+      <View style={{ height: 1, backgroundColor: "rgba(0,0,0,0.08)" }} />
 
+      {/* PRÓXIMO */}
       <View>
         <Text
           style={{
             fontSize: 12,
             color: colors.accent,
-            fontWeight: "600",
+            fontWeight: "700",
             letterSpacing: 1,
           }}
         >
@@ -235,22 +252,29 @@ export function ScheduleSection() {
         <Text
           style={{
             fontSize: 16,
-            fontWeight: "600",
+            fontWeight: "800",
             color: "#38455c",
-            marginTop: 4,
+            marginTop: 6,
           }}
         >
-          {next?.title ?? "Sin programación próxima"}
+          {nextProgram?.title ?? "Sin programación próxima"}
         </Text>
 
-        {next ? (
-          <Text style={{ color: "#184f92", marginTop: 2 }}>
-            {next.start} – {next.end}
+        {/* Host (si existe) */}
+        {nextProgram?.host ? (
+          <Text style={{ color: "#184f92", marginTop: 4, fontSize: 13, fontWeight: "600" }}>
+            {nextProgram.host}
+          </Text>
+        ) : null}
+
+        {nextProgram ? (
+          <Text style={{ color: "#184f92", marginTop: 4 }}>
+            {nextProgram.start} – {nextProgram.end}
           </Text>
         ) : null}
       </View>
 
-      <Text style={{ fontSize: 11, opacity: 0.6, marginTop: 8 }}>
+      <Text style={{ fontSize: 11, opacity: 0.6, marginTop: 6 }}>
         Hora oficial: República Dominicana (UTC-4)
       </Text>
     </View>

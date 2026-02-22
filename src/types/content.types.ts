@@ -12,6 +12,7 @@ export type ScheduleItemType = "music" | "program" | "ads" | "live" | "other";
 export interface ScheduleItem {
   id: string;
   title: string;
+  host?: string;
   type: ScheduleItemType;
   startTime: string; // "HH:mm"
   endTime: string;   // "HH:mm"

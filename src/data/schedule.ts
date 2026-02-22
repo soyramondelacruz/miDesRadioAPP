@@ -7,6 +7,7 @@ export const SCHEDULE_DEBUG = {
 export type Program = {
   id: string;
   title: string;
+  host?: string;
   start: string; // "HH:MM"
   end: string;   // "HH:MM"
 };
@@ -24,6 +25,7 @@ export const weeklySchedule: WeeklySchedule = {
     {
       id: "sun-morning",
       title: "Alabanza Dominical",
+      host: "Ramon",
       start: "08:00",
       end: "10:00",
     },

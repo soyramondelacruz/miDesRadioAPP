@@ -29,7 +29,7 @@ const BASE_VERSES: Omit<Verse, "id">[] = [
     category: "jesus",
   },
   {
-    text: "Mas el Consolador, el Espíritu Santo...",
+    text: " Mas el Consolador, el Espíritu Santo, a quien el Padre enviará en mi nombre, él os enseñará todas las cosas, y os recordará todo lo que yo os he dicho.",
     reference: "Juan 14:26",
     category: "espiritu",
   },
