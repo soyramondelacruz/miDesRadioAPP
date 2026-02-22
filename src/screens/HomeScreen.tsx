@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import {
   ScrollView,
   Text,
@@ -6,6 +6,8 @@ import {
   TouchableOpacity,
   Pressable,
   ActivityIndicator,
+  Animated,
+  Easing,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
@@ -14,7 +16,6 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useRadioPlayer } from "../context/RadioPlayerContext";
 import { VerseOfTheDay } from "../components/VerseOfTheDay";
 import { spacing } from "../theme";
-import { DAILY_PHRASES } from "../data/dailyPhrases";
 
 /** =========================
  * Helpers
@@ -29,27 +30,6 @@ function formatFechaCorta(d: Date) {
   } catch {
     return d.toDateString();
   }
-}
-
-function formatHora(d: Date) {
-  try {
-    return new Intl.DateTimeFormat("es-DO", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-    }).format(d);
-  } catch {
-    const h = String(d.getHours()).padStart(2, "0");
-    const m = String(d.getMinutes()).padStart(2, "0");
-    return `${h}:${m}`;
-  }
-}
-
-function getDayOfYear(d: Date) {
-  const start = new Date(d.getFullYear(), 0, 0);
-  const diff = d.getTime() - start.getTime();
-  const oneDay = 1000 * 60 * 60 * 24;
-  return Math.floor(diff / oneDay);
 }
 
 /** =========================
@@ -78,15 +58,34 @@ function NowPlayingMini({
         opacity: pressed ? 0.95 : 1,
       })}
     >
-      <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-        <View style={{ flex: 1, paddingRight: 12 }}>
-          <Text style={{ fontSize: 12, fontWeight: "900", color: "rgba(255,255,255,0.75)", letterSpacing: 1 }}>
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 12,
+        }}
+      >
+        <View style={{ flex: 1 }}>
+          <Text
+            style={{
+              fontSize: 12,
+              fontWeight: "900",
+              color: "rgba(255,255,255,0.75)",
+              letterSpacing: 1,
+            }}
+          >
             AHORA SONANDO
           </Text>
 
           <Text
             numberOfLines={1}
-            style={{ fontSize: 16, fontWeight: "900", color: "#FFFFFF", marginTop: 6 }}
+            style={{
+              fontSize: 16,
+              fontWeight: "900",
+              color: "#FFFFFF",
+              marginTop: 6,
+            }}
           >
             {title}
           </Text>
@@ -94,7 +93,12 @@ function NowPlayingMini({
           {!!host && (
             <Text
               numberOfLines={1}
-              style={{ fontSize: 12, fontWeight: "700", color: "rgba(255,255,255,0.72)", marginTop: 4 }}
+              style={{
+                fontSize: 12,
+                fontWeight: "700",
+                color: "rgba(255,255,255,0.72)",
+                marginTop: 4,
+              }}
             >
               {host}
             </Text>
@@ -104,13 +108,32 @@ function NowPlayingMini({
         <View style={{ alignItems: "flex-end", gap: 8 }}>
           {isLive ? (
             <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-              <View style={{ width: 6, height: 6, borderRadius: 99, backgroundColor: "#FF4D4D" }} />
-              <Text style={{ fontSize: 12, fontWeight: "900", color: "rgba(255,255,255,0.85)" }}>
+              <View
+                style={{
+                  width: 6,
+                  height: 6,
+                  borderRadius: 99,
+                  backgroundColor: "#FF4D4D",
+                }}
+              />
+              <Text
+                style={{
+                  fontSize: 12,
+                  fontWeight: "900",
+                  color: "rgba(255,255,255,0.85)",
+                }}
+              >
                 LIVE
               </Text>
             </View>
           ) : (
-            <Text style={{ fontSize: 12, fontWeight: "900", color: "rgba(255,255,255,0.60)" }}>
+            <Text
+              style={{
+                fontSize: 12,
+                fontWeight: "900",
+                color: "rgba(255,255,255,0.60)",
+              }}
+            >
               OFFLINE
             </Text>
           )}
@@ -129,15 +152,40 @@ export function HomeScreen() {
   const { now, effectiveNow, status, play, pause } = useRadioPlayer();
 
   const metaFecha = useMemo(() => formatFechaCorta(effectiveNow), [effectiveNow]);
-  const metaHora = useMemo(() => formatHora(effectiveNow), [effectiveNow]);
-
-  const phrase = useMemo(() => {
-    const idx = getDayOfYear(effectiveNow) % DAILY_PHRASES.length;
-    return DAILY_PHRASES[idx];
-  }, [effectiveNow]);
 
   const isLoading = status === "loading";
   const isPlaying = status === "playing";
+
+  /** ✅ Halo / pulse animation */
+  const pulse = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (!isPlaying) {
+      pulse.stopAnimation();
+      pulse.setValue(0);
+      return;
+    }
+
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulse, {
+          toValue: 1,
+          duration: 850,
+          easing: Easing.out(Easing.quad),
+          useNativeDriver: true,
+        }),
+        Animated.timing(pulse, {
+          toValue: 0,
+          duration: 850,
+          easing: Easing.in(Easing.quad),
+          useNativeDriver: true,
+        }),
+      ])
+    );
+
+    loop.start();
+    return () => loop.stop();
+  }, [isPlaying, pulse]);
 
   function handleFabPress() {
     if (isLoading) return;
@@ -151,23 +199,17 @@ export function HomeScreen() {
     now.data?.station ??
     "miDes Radio";
 
-  const npHost =
-    now.data?.show?.host ??
-    now.data?.track?.artist ??
-    "—";
-
+  const npHost = now.data?.show?.host ?? now.data?.track?.artist ?? "—";
   const npIsLive = !!now.data?.isLive;
 
   return (
     <SafeAreaView style={{ flex: 1 }} edges={["top"]}>
       <View style={{ flex: 1, backgroundColor: "#0E1624" }}>
         <ScrollView
-          contentContainerStyle={{
-            paddingBottom: spacing.xl,
-          }}
+          contentContainerStyle={{ paddingBottom: spacing.xl }}
           showsVerticalScrollIndicator={false}
         >
-          {/* HEADER dentro del Scroll: clave para que el versículo “flote” */}
+          {/* HEADER dentro del Scroll (para overlap del versículo) */}
           <LinearGradient
             colors={["#1E4E8A", "#234C86"]}
             start={{ x: 0, y: 0 }}
@@ -175,7 +217,7 @@ export function HomeScreen() {
             style={{
               paddingHorizontal: spacing.lg,
               paddingTop: spacing.md,
-              paddingBottom: 66, // deja “hueco” para el overlap del versículo
+              paddingBottom: 63,
             }}
           >
             <View
@@ -188,7 +230,7 @@ export function HomeScreen() {
               <View style={{ gap: 2 }}>
                 <Text
                   style={{
-                    fontSize: 22,
+                    fontSize: 20,
                     fontWeight: "900",
                     color: "#fff",
                     letterSpacing: -0.3,
@@ -202,29 +244,18 @@ export function HomeScreen() {
               </View>
 
               <View style={{ alignItems: "flex-end" }}>
-                <Text style={{ fontSize: 12, opacity: 0.85, color: "#fff" }}>
-                  {metaFecha}
-                </Text>
-                <Text style={{ fontSize: 12, opacity: 0.85, color: "#fff" }}>
-                  {metaHora}
+                <Text
+                  style={{
+                    fontSize: 10,
+                    opacity: 0.85,
+                    color: "#fff",
+                    fontWeight: "700",
+                    letterSpacing: 1,
+                  }}
+                >
+                  {metaFecha.toUpperCase()}
                 </Text>
               </View>
-            </View>
-
-            <View style={{ marginTop: 12, gap: 4 }}>
-              <Text style={{ fontSize: 13, color: "rgba(255,255,255,0.92)" }}>
-                {phrase.text}
-              </Text>
-              <Text
-                style={{
-                  fontSize: 11,
-                  color: "rgba(255,255,255,0.70)",
-                  fontWeight: "800",
-                  letterSpacing: 1,
-                }}
-              >
-                {phrase.category.toUpperCase()}
-              </Text>
             </View>
           </LinearGradient>
 
@@ -236,60 +267,98 @@ export function HomeScreen() {
               gap: spacing.md,
             }}
           >
-            {/* Versículo flotante (real overlap) */}
+            {/* Versículo flotante (overlap real) */}
             <View style={{ marginTop: -44, position: "relative", zIndex: 20 }}>
               <VerseOfTheDay compact />
 
-              {/* FAB Play/Pause flotante invadiendo el versículo */}
+              {/* FAB invadiendo el card del versículo */}
               <View
                 style={{
                   position: "absolute",
                   right: 14,
                   bottom: -26,
-                  zIndex: 50,
-                  elevation: 50,
+                  zIndex: 60,
+                  elevation: 60,
                 }}
               >
+                {/* Halo animado: MÁS visible */}
+                {isPlaying && (
+                  <Animated.View
+                    pointerEvents="none"
+                    style={{
+                      position: "absolute",
+                      left: -14,
+                      top: -14,
+                      width: 92,
+                      height: 92,
+                      borderRadius: 46,
+
+                      // borde + glow sutil
+                      borderWidth: 2,
+                      borderColor: "rgba(245, 158, 80, 0.65)",
+                      backgroundColor: "rgba(245, 158, 80, 0.10)",
+
+                      // detrás del botón
+                      zIndex: 0,
+
+                      transform: [
+                        {
+                          scale: pulse.interpolate({
+                            inputRange: [0, 1],
+                            outputRange: [0.98, 1.22],
+                          }),
+                        },
+                      ],
+                      opacity: pulse.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [0.55, 0.05],
+                      }),
+                    }}
+                  />
+                )}
+
+                {/* Botón */}
                 <Pressable
                   onPress={handleFabPress}
                   style={({ pressed }) => ({
-                    width: 62,
-                    height: 62,
-                    borderRadius: 31,
-                    overflow: "hidden",
+                    width: 64,
+                    height: 64,
+                    borderRadius: 32,
+                    backgroundColor: "#FFFFFF",
+                    alignItems: "center",
+                    justifyContent: "center",
                     opacity: pressed ? 0.92 : 1,
+
+                    borderWidth: 2,
+                    borderColor: "#B2CEEE",
+
+                    // iOS shadow
                     shadowColor: "#000",
-                    shadowOpacity: 0.22,
+                    shadowOpacity: 0.18,
                     shadowRadius: 18,
                     shadowOffset: { width: 0, height: 10 },
-                    elevation: 14,
+
+                    // Android
+                    elevation: 16,
+
+                    // arriba del halo
+                    zIndex: 1,
                   })}
                 >
-                  <LinearGradient
-                    colors={["#184f92", "#38455c"]}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
-                    style={{
-                      flex: 1,
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    {isLoading ? (
-                      <ActivityIndicator color="#fff" />
-                    ) : (
-                      <Text
-                        style={{
-                          color: "#fff",
-                          fontSize: 22,
-                          fontWeight: "900",
-                          marginLeft: isPlaying ? 0 : 2,
-                        }}
-                      >
-                        {isPlaying ? "❚❚" : "▶"}
-                      </Text>
-                    )}
-                  </LinearGradient>
+                  {isLoading ? (
+                    <ActivityIndicator color="#184f92" />
+                  ) : (
+                    <Text
+                      style={{
+                        color: "#184f92",
+                        fontSize: 24,
+                        fontWeight: "900",
+                        marginLeft: isPlaying ? 0 : 3,
+                      }}
+                    >
+                      {isPlaying ? "❚❚" : "▶"}
+                    </Text>
+                  )}
                 </Pressable>
               </View>
 
@@ -297,13 +366,15 @@ export function HomeScreen() {
               <View style={{ height: 22 }} />
             </View>
 
-            {/* NowPlaying visible SIEMPRE (dark-ready) */}
-            <NowPlayingMini
-              title={npTitle}
-              host={npHost}
-              isLive={npIsLive}
-              onPress={() => navigation.navigate("Radio")}
-            />
+            {/* NowPlaying */}
+            <View style={{ marginTop: 28 }}>
+              <NowPlayingMini
+                title={npTitle}
+                host={npHost}
+                isLive={npIsLive}
+                onPress={() => navigation.navigate("Radio")}
+              />
+            </View>
 
             {/* Accesos rápidos */}
             <View style={{ gap: spacing.sm, marginTop: 2 }}>
@@ -443,7 +514,6 @@ export function HomeScreen() {
               </TouchableOpacity>
             </View>
 
-            {/* bottom spacing para no pegar con tabbar */}
             <View style={{ height: 12 }} />
           </View>
         </ScrollView>
