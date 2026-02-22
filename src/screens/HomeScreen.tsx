@@ -16,6 +16,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useRadioPlayer } from "../context/RadioPlayerContext";
 import { VerseOfTheDay } from "../components/VerseOfTheDay";
 import { spacing } from "../theme";
+import { HomeScheduleCarousel } from "../components/HomeScheduleCarousel";
 
 /** =========================
  * Helpers
@@ -368,12 +369,7 @@ export function HomeScreen() {
 
             {/* NowPlaying */}
             <View style={{ marginTop: 28 }}>
-              <NowPlayingMini
-                title={npTitle}
-                host={npHost}
-                isLive={npIsLive}
-                onPress={() => navigation.navigate("Radio")}
-              />
+            <HomeScheduleCarousel onOpenRadio={() => navigation.navigate("Radio")} />
             </View>
 
             {/* Accesos rápidos */}
