@@ -1,91 +1,129 @@
-import React from "react";
-import { View, Text, Image } from "react-native";
-import type { NowPlayingPayload } from "../types/content.types";
+import { View, Text, Animated, Easing } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import { Feather } from "@expo/vector-icons";
+import { useEffect, useRef } from "react";
+import { colors, spacing } from "../theme";
 
-type Props = {
-  data: NowPlayingPayload;
-  variant?: "compact" | "full";
-};
+interface Props {
+  data: {
+    title: string;
+    host?: string;
+    isLive?: boolean;
+  };
+}
 
-export function NowPlayingCard({ data, variant = "full" }: Props) {
-  const showTitle = data.show?.title ?? "Sin programa";
-  const host = data.show?.host;
-  const timeRange =
-    data.show?.startTime && data.show?.endTime
-      ? `${data.show.startTime} – ${data.show.endTime}`
-      : null;
+export function NowPlayingCard({ data }: Props) {
+  const pulse = useRef(new Animated.Value(1)).current;
 
-  const trackLine = `${data.track?.title ?? "—"}${
-    data.track?.artist ? ` • ${data.track.artist}` : ""
-  }`;
-
-  const imageUrl =
-    variant === "compact"
-      ? data.show?.coverImage ?? data.track?.artwork
-      : data.show?.coverImage ?? data.track?.artwork;
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulse, {
+          toValue: 1.2,
+          duration: 900,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.timing(pulse, {
+          toValue: 1,
+          duration: 900,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+  }, []);
 
   return (
-    <View
+    <LinearGradient
+      colors={["rgba(255,255,255,0.97)", "rgba(240,245,255,0.92)"]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
       style={{
-        borderWidth: 1,
-        borderColor: "#e5e5e5",
-        borderRadius: 16,
-        padding: 14,
-        gap: 10,
+        flexDirection: "row",
+        alignItems: "center",
+        borderRadius: 24,
+        paddingVertical: spacing.md,
+        paddingHorizontal: spacing.md,
+        shadowColor: "#000",
+        shadowOpacity: 0.08,
+        shadowRadius: 18,
+        elevation: 5,
       }}
     >
-      <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-        <Text style={{ fontSize: 16, fontWeight: "800" }}>Ahora Sonando</Text>
-        <Text style={{ fontSize: 14 }}>
-          {data.isLive ? "🔴 En vivo" : "⚪️ Offline"}
+      {/* Icono circular */}
+      <View
+        style={{
+          width: 48,
+          height: 48,
+          borderRadius: 24,
+          backgroundColor: colors.primary + "18",
+          alignItems: "center",
+          justifyContent: "center",
+          marginRight: spacing.md,
+        }}
+      >
+        <Feather name="radio" size={20} color={colors.primary} />
+      </View>
+
+      {/* Texto */}
+      <View style={{ flex: 1 }}>
+        <Text
+          style={{
+            fontSize: 16,
+            fontWeight: "600",
+            color: "#1f2c4c",
+          }}
+          numberOfLines={1}
+        >
+          {data.title}
+        </Text>
+
+        {data.host && (
+          <Text
+            style={{
+              marginTop: 2,
+              fontSize: 13,
+              color: "#6b7280",
+            }}
+            numberOfLines={1}
+          >
+            con {data.host}
+          </Text>
+        )}
+      </View>
+
+      {/* LIVE Indicator a la derecha */}
+      {data.isLive && (
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          marginLeft: spacing.sm,
+        }}
+      >
+        <Animated.View
+          style={{
+            width: 8,
+            height: 8,
+            borderRadius: 4,
+            backgroundColor: "#ff3b30",
+            transform: [{ scale: pulse }],
+            marginRight: 5,
+          }}
+        />
+        <Text
+          style={{
+            fontSize: 11,
+            fontWeight: "700",
+            color: "#ff3b30",
+            letterSpacing: 1,
+          }}
+        >
+          LIVE
         </Text>
       </View>
-
-      <View style={{ flexDirection: "row", gap: 12, alignItems: "center" }}>
-        {imageUrl ? (
-          <Image
-            source={{ uri: imageUrl }}
-            style={{
-              width: variant === "compact" ? 56 : 84,
-              height: variant === "compact" ? 56 : 84,
-              borderRadius: 14,
-              backgroundColor: "#f2f2f2",
-            }}
-          />
-        ) : (
-          <View
-            style={{
-              width: variant === "compact" ? 56 : 84,
-              height: variant === "compact" ? 56 : 84,
-              borderRadius: 14,
-              backgroundColor: "#f2f2f2",
-            }}
-          />
-        )}
-
-        <View style={{ flex: 1, gap: 3 }}>
-          <Text style={{ fontSize: 16, fontWeight: "800" }}>{showTitle}</Text>
-          {host ? <Text style={{ opacity: 0.8 }}>Con: {host}</Text> : null}
-          {timeRange ? <Text style={{ opacity: 0.7 }}>{timeRange}</Text> : null}
-
-          <View style={{ height: 6 }} />
-
-          <Text style={{ fontSize: 14, fontWeight: "700" }}>Tema</Text>
-          <Text style={{ opacity: 0.85 }}>{trackLine}</Text>
-        </View>
-      </View>
-
-      {variant === "full" ? (
-        <>
-          {data.show?.description ? (
-            <Text style={{ opacity: 0.85 }}>{data.show.description}</Text>
-          ) : null}
-
-          <Text style={{ opacity: 0.6, marginTop: 2 }}>
-            Actualizado: {data.updatedAt}
-          </Text>
-        </>
-      ) : null}
-    </View>
+      )}
+    </LinearGradient>
   );
 }

@@ -1,17 +1,23 @@
 export const colors = {
-  primary: '#1F4FD8',      // Fe / confianza
-  secondary: '#F28C28',    // Voz / acción
+  background: "#FAF8FA",     // luminoso suave
+  surface: "#FFFFFF",
 
-  background: '#FFFFFF',
-  surface: '#F5F7FA',
+  primary: "#184F92",        // azul principal del logo
+  primarySoft: "#B2CEEE",    // azul cielo
+  accent: "#E68637",         // naranja esperanza
 
-  textPrimary: '#0F172A',
-  textSecondary: '#475569',
-  textMuted: '#94A3B8',
+  textPrimary: "#38455C",
+  textSecondary: "#6B7280",
+  muted: "#9CA3AF",
+};
+export const LightTheme = colors;
 
-  border: '#E2E8F0',
-
-  success: '#22C55E',
-  warning: '#F59E0B',
-  error: '#EF4444',
+export const DarkTheme = {
+  background: "#0E1624",
+  surface: "#182233",
+  primary: "#4F83CC",
+  accent: "#FF8C42",
+  textPrimary: "#FFFFFF",
+  textSecondary: "#9CA3AF",
+  danger: "#FF5252",
 };

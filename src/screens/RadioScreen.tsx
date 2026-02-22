@@ -1,67 +1,66 @@
-import React from "react";
-import { View, Text } from "react-native";
-import { RADIO_CONFIG } from "../config/radio.config";
-import { useRadioPlayer } from "../hooks/useRadioPlayer";
+import React, { useState } from "react";
+import { ScrollView } from "react-native";
+import { useRadioPlayer } from "../context/RadioPlayerContext";
 import { PlayerControls } from "../components/PlayerControls";
-import { useNowPlaying } from "../hooks/useNowPlaying";
 import { NowPlayingCard } from "../components/NowPlayingCard";
-import { colors, spacing } from "../theme";
+import { spacing } from "../theme";
+import { LinearGradient } from "expo-linear-gradient";
+import { ScheduleSection } from "../components/ScheduleSection";
+import { DebugTimePanel } from "../components/DebugTimePanel";
+import { VerseOfTheDay } from "../components/VerseOfTheDay";
 
 export function RadioScreen() {
-  const { state, play, pause, stop } = useRadioPlayer();
-  const now = useNowPlaying(30000);
+  const { status, play, pause, now } = useRadioPlayer();
+  const [debugRefresh, setDebugRefresh] = useState(0);
 
   return (
-    <View
-      style={{
-        flex: 1,
-        padding: spacing.lg,
-        gap: spacing.md,
-        backgroundColor: colors.background,
-      }}
+    <LinearGradient
+      colors={["#B2CEEE", "#FAF8FA"]}
+      start={{ x: 0.5, y: 0 }}
+      end={{ x: 0.5, y: 1 }}
+      style={{ flex: 1 }}
     >
-      <Text style={{ fontSize: 26, fontWeight: "800" }}>
-        {RADIO_CONFIG.APP_NAME}
-      </Text>
-
-      <Text
-        style={{
-          fontSize: 16,
-          fontWeight: "600",
-          color: state.isLive ? colors.danger : colors.muted,
+      <ScrollView
+        contentContainerStyle={{
+          paddingHorizontal: spacing.lg,
+          paddingTop: spacing.lg,
+          paddingBottom: spacing.lg,
+          gap: spacing.md, // ⬅ Reducido
         }}
+        showsVerticalScrollIndicator={false}
       >
-        {state.isLive ? "🔴 En vivo" : "⚪️ Offline"}
-      </Text>
+        <PlayerControls
+          status={status}
+          onPlay={play}
+          onPause={pause}
+        />
 
-      {state.status === "error" && (
-        <Text style={{ color: colors.danger }}>
-          Error: {state.errorMessage ?? "No se pudo reproducir."}
-        </Text>
+        {now.data && (
+        <NowPlayingCard
+          data={{
+            title:
+              now.data.show?.title ??
+              now.data.track?.title ??
+              now.data.station,
+            host:
+              now.data.show?.host ??
+              now.data.track?.artist,
+            isLive: now.data.isLive,
+            mode: now.data.show ? "show" : "track",
+          }}
+        />
       )}
 
-      <PlayerControls
-        status={state.status}
-        onPlay={play}
-        onPause={pause}
-        onStop={stop}
-      />
+        <VerseOfTheDay compact />
 
-      {now.loading && (
-        <Text style={{ color: colors.muted }}>
-          Cargando Ahora Sonando…
-        </Text>
-      )}
+        <ScheduleSection key={debugRefresh} />
 
-      {now.error && (
-        <Text style={{ color: colors.danger }}>
-          Error Ahora Sonando: {now.error}
-        </Text>
-      )}
-
-      {now.data && (
-        <NowPlayingCard data={now.data} variant="compact" />
-      )}
-    </View>
+        <DebugTimePanel
+          onTimeChange={() =>
+            setDebugRefresh(prev => prev + 1)
+          }
+        />
+      </ScrollView>
+    </LinearGradient>
   );
 }
