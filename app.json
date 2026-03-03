@@ -7,7 +7,6 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
-
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
@@ -25,10 +24,7 @@
 
     "android": {
       "package": "com.mides.radio",
-      "permissions": [
-        "FOREGROUND_SERVICE",
-        "WAKE_LOCK"
-      ],
+      "permissions": ["FOREGROUND_SERVICE", "WAKE_LOCK"],
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -37,9 +33,14 @@
       "predictiveBackGestureEnabled": false
     },
 
-    "web": {
-      "favicon": "./assets/favicon.png"
-    },
+    "plugins": [
+      [
+        "expo-audio",
+        {
+          "enableBackgroundPlayback": true
+        }
+      ]
+    ],
 
     "extra": {
       "eas": {

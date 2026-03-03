@@ -7,7 +7,7 @@ import React, {
   useCallback,
   useMemo,
 } from "react";
-import { Audio } from "expo-av";
+import * as Audio from "expo-audio";
 import { RADIO_CONFIG } from "../config/radio.config";
 import { useNowPlaying } from "../hooks/useNowPlaying";
 
@@ -29,7 +29,7 @@ interface RadioContextType {
 const RadioContext = createContext<RadioContextType | null>(null);
 
 export function RadioPlayerProvider({ children }: { children: React.ReactNode }) {
-  const soundRef = useRef<Audio.Sound | null>(null);
+  const playerRef = useRef<ReturnType<typeof Audio.createAudioPlayer> | null>(null);
   const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isReconnectingRef = useRef(false);
 
@@ -51,76 +51,65 @@ export function RadioPlayerProvider({ children }: { children: React.ReactNode })
     setSimulatedISOTime(null);
   }, []);
 
-  const ensureAudioMode = useCallback(async () => {
-    await Audio.setAudioModeAsync({
-      staysActiveInBackground: true,
-      playsInSilentModeIOS: true,
-      allowsRecordingIOS: false,
-
-      // ✅ SDK 54: enums correctos (evita “invalid value”)
-      interruptionModeIOS: Audio.InterruptionModeIOS.DoNotMix,
-      interruptionModeAndroid: Audio.InterruptionModeAndroid.DoNotMix,
-
-      shouldDuckAndroid: false,
-      playThroughEarpieceAndroid: false,
-    });
+  // ===============================
+  // AUDIO MODE (BACKGROUND)
+  // ===============================
+  useEffect(() => {
+    (async () => {
+      try {
+        await Audio.setAudioModeAsync({
+          playsInSilentMode: true,
+          shouldPlayInBackground: true,
+          interruptionMode: "doNotMix",
+        });
+      } catch (e) {
+        console.log("Audio mode error:", e);
+      }
+    })();
   }, []);
 
-  /* ===============================
-     AUDIO MODE (BACKGROUND)
-     Nota iOS: también necesitas UIBackgroundModes:["audio"] en app.json/app.config.
-  =============================== */
-  useEffect(() => {
-  (async () => {
+  // ===============================
+  // Create / ensure player
+  // ===============================
+  const ensurePlayer = useCallback(() => {
+    if (playerRef.current) return playerRef.current;
+
+    const p = Audio.createAudioPlayer({ uri: RADIO_CONFIG.STREAM_URL });
+    playerRef.current = p;
+    return p;
+  }, []);
+
+  // ===============================
+  // Lock screen metadata (important)
+  // ===============================
+  const activateLockScreen = useCallback(() => {
+    const p = playerRef.current;
+    if (!p) return;
+
+    const title =
+      now.data?.show?.title ??
+      now.data?.track?.title ??
+      RADIO_CONFIG.APP_NAME;
+
+    const artist =
+      now.data?.show?.host ??
+      now.data?.track?.artist ??
+      "miDes";
+
     try {
-      await Audio.setAudioModeAsync({
-        staysActiveInBackground: true,
-        playsInSilentModeIOS: true,
-        allowsRecordingIOS: false,
-        shouldDuckAndroid: false,
-        playThroughEarpieceAndroid: false,
+      p.setActiveForLockScreen(true, {
+        title,
+        artist,
+        albumTitle: RADIO_CONFIG.APP_NAME,
       });
     } catch (e) {
-      console.log("Audio mode error:", e);
+      console.log("Lock screen activation error:", e);
     }
-  })();
-}, []);
+  }, [now.data]);
 
-  /* ===============================
-     STATUS LISTENER
-  =============================== */
-  const onPlaybackStatusUpdate = useCallback((s: any) => {
-    if (!s?.isLoaded) {
-      if (s?.error) {
-        console.log("Stream error:", s.error);
-        setStatus("error");
-      }
-      return;
-    }
-
-    if (s.isPlaying) setStatus("playing");
-    else setStatus((prev) => (prev === "loading" ? "paused" : prev));
-  }, []);
-
-  /* ===============================
-     LOAD & CREATE SOUND
-  =============================== */
-  const createSound = useCallback(async () => {
-    const { sound } = await Audio.Sound.createAsync(
-      { uri: RADIO_CONFIG.STREAM_URL },
-      {
-        shouldPlay: false,
-        playThroughEarpieceAndroid: false,
-      },
-      onPlaybackStatusUpdate
-    );
-
-    soundRef.current = sound;
-  }, [onPlaybackStatusUpdate]);
-
-  /* ===============================
-     RECONNECT LOGIC
-  =============================== */
+  // ===============================
+  // Reconnect
+  // ===============================
   const reconnect = useCallback(async () => {
     if (isReconnectingRef.current) return;
 
@@ -128,18 +117,19 @@ export function RadioPlayerProvider({ children }: { children: React.ReactNode })
     setStatus("loading");
 
     try {
-      try {
-        await soundRef.current?.unloadAsync();
-      } catch {}
-      soundRef.current = null;
-
       if (reconnectTimeoutRef.current) clearTimeout(reconnectTimeoutRef.current);
 
       reconnectTimeoutRef.current = setTimeout(async () => {
         try {
-          await ensureAudioMode();
-          await createSound();
-          await soundRef.current?.playAsync();
+          const p = ensurePlayer();
+
+          // Si tu versión soporta replace, ayuda mucho cuando el stream muere
+          if (typeof (p as any).replace === "function") {
+            await (p as any).replace({ uri: RADIO_CONFIG.STREAM_URL });
+          }
+
+          activateLockScreen();
+          p.play();
           setStatus("playing");
         } catch (err) {
           console.log("Reconnect failed:", err);
@@ -147,55 +137,65 @@ export function RadioPlayerProvider({ children }: { children: React.ReactNode })
         } finally {
           isReconnectingRef.current = false;
         }
-      }, 2500);
+      }, 1500);
     } catch (err) {
       console.log("Reconnect outer error:", err);
       setStatus("error");
       isReconnectingRef.current = false;
     }
-  }, [createSound, ensureAudioMode]);
+  }, [ensurePlayer, activateLockScreen]);
 
-  /* ===============================
-     PLAY
-  =============================== */
+  // ===============================
+  // PLAY
+  // ===============================
   const play = useCallback(async () => {
-  if (status === "playing" || status === "loading") return;
+    if (status === "playing" || status === "loading") return;
 
-  try {
-    setStatus("loading");
+    try {
+      setStatus("loading");
 
-    if (!soundRef.current) {
-      await createSound();
+      // Re-aplicar modo por seguridad (barato y robusto)
+      await Audio.setAudioModeAsync({
+        playsInSilentMode: true,
+        shouldPlayInBackground: true,
+        interruptionMode: "doNotMix",
+      });
+
+      const p = ensurePlayer();
+      activateLockScreen();
+
+      p.play();
+      setStatus("playing");
+    } catch (err) {
+      console.log("Play error:", err);
+      setStatus("error");
+      reconnect();
     }
+  }, [status, ensurePlayer, activateLockScreen, reconnect]);
 
-    await soundRef.current?.playAsync();
-    setStatus("playing");
-  } catch (err) {
-    console.log("Play error:", err);
-    setStatus("error");
-    reconnect();
-  }
-}, [status, createSound, reconnect]);
-
-  /* ===============================
-     PAUSE
-  =============================== */
+  // ===============================
+  // PAUSE
+  // ===============================
   const pause = useCallback(async () => {
     try {
-      await soundRef.current?.pauseAsync();
+      const p = playerRef.current;
+      p?.pause();
       setStatus("paused");
     } catch (err) {
       console.log("Pause error:", err);
     }
   }, []);
 
-  /* ===============================
-     CLEANUP
-  =============================== */
+  // ===============================
+  // CLEANUP
+  // ===============================
   useEffect(() => {
     return () => {
       if (reconnectTimeoutRef.current) clearTimeout(reconnectTimeoutRef.current);
-      soundRef.current?.unloadAsync();
+      try {
+        playerRef.current?.release?.();
+      } catch {}
+      playerRef.current = null;
     };
   }, []);
 
