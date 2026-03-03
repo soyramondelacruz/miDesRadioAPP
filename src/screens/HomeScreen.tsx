@@ -9,7 +9,7 @@ import {
   Animated,
   Easing,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Feather } from "@expo/vector-icons";
@@ -18,121 +18,7 @@ import { useRadioPlayer } from "../context/RadioPlayerContext";
 import { VerseOfTheDay } from "../components/VerseOfTheDay";
 import { spacing } from "../theme";
 import { HomeScheduleCarousel } from "../components/HomeScheduleCarousel";
-
-/** =========================
- * Dark-ready Now Playing (Home)
- * ========================= */
-function NowPlayingMini({
-  title,
-  host,
-  isLive,
-  onPress,
-}: {
-  title: string;
-  host?: string | null;
-  isLive?: boolean;
-  onPress?: () => void;
-}) {
-  return (
-    <Pressable
-      onPress={onPress}
-      style={({ pressed }) => ({
-        backgroundColor: "rgba(255,255,255,0.08)",
-        borderRadius: 18,
-        padding: spacing.lg,
-        borderWidth: 1,
-        borderColor: "rgba(255,255,255,0.10)",
-        opacity: pressed ? 0.95 : 1,
-      })}
-    >
-      <View
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: 12,
-        }}
-      >
-        <View style={{ flex: 1 }}>
-          <Text
-            style={{
-              fontSize: 12,
-              fontWeight: "900",
-              color: "rgba(255,255,255,0.75)",
-              letterSpacing: 1,
-            }}
-          >
-            AHORA SONANDO
-          </Text>
-
-          <Text
-            numberOfLines={1}
-            style={{
-              fontSize: 16,
-              fontWeight: "900",
-              color: "#FFFFFF",
-              marginTop: 6,
-            }}
-          >
-            {title}
-          </Text>
-
-          {!!host && (
-            <Text
-              numberOfLines={1}
-              style={{
-                fontSize: 12,
-                fontWeight: "700",
-                color: "rgba(255,255,255,0.72)",
-                marginTop: 4,
-              }}
-            >
-              {host}
-            </Text>
-          )}
-        </View>
-
-        <View style={{ alignItems: "flex-end", gap: 8 }}>
-          {isLive ? (
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-              <View
-                style={{
-                  width: 6,
-                  height: 6,
-                  borderRadius: 99,
-                  backgroundColor: "#FF4D4D",
-                }}
-              />
-              <Text
-                style={{
-                  fontSize: 12,
-                  fontWeight: "900",
-                  color: "rgba(255,255,255,0.85)",
-                }}
-              >
-                LIVE
-              </Text>
-            </View>
-          ) : (
-            <Text
-              style={{
-                fontSize: 12,
-                fontWeight: "900",
-                color: "rgba(255,255,255,0.60)",
-              }}
-            >
-              OFFLINE
-            </Text>
-          )}
-
-          <Text style={{ fontSize: 12, fontWeight: "900", color: "#9CC3FF" }}>
-            Abrir →
-          </Text>
-        </View>
-      </View>
-    </Pressable>
-  );
-}
+import { vw, isSmallPhone } from "../utils/responsive";
 
 function QuickActionCard({
   label,
@@ -141,6 +27,7 @@ function QuickActionCard({
   icon,
   onPress,
   variant = "glass",
+  dense = false,
 }: {
   label: string;
   title: string;
@@ -148,6 +35,7 @@ function QuickActionCard({
   icon: keyof typeof Feather.glyphMap;
   onPress: () => void;
   variant?: "glass" | "donate";
+  dense?: boolean;
 }) {
   const isDonate = variant === "donate";
 
@@ -157,16 +45,15 @@ function QuickActionCard({
 
   const Container = ({ children }: { children: React.ReactNode }) =>
     isDonate ? (
-      // ✅ DONAR (azul institucional con acento naranja)
       <LinearGradient
         colors={["#1B2F4A", "#13243A"]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={{
           borderRadius: 18,
-          paddingVertical: 14,
+          paddingVertical: dense ? 12 : 14,
           paddingHorizontal: 14,
-          minHeight: 98,
+          minHeight: dense ? 92 : 98,
           justifyContent: "center",
           borderWidth: 1,
           borderColor: "rgba(255,255,255,0.12)",
@@ -207,7 +94,7 @@ function QuickActionCard({
       onPress={onPress}
       style={({ pressed }) => ({
         flex: 1,
-        minHeight: 118,
+        minHeight: dense ? 104 : 118,
         borderRadius: 16,
         overflow: "hidden",
         opacity: pressed ? 0.92 : 1,
@@ -246,7 +133,7 @@ function QuickActionCard({
             />
           </View>
 
-          <View style={{ opacity: isDonate ? 0.95 : 0.95 }}>
+          <View style={{ opacity: 0.95 }}>
             <Feather
               name="chevron-right"
               size={18}
@@ -256,7 +143,7 @@ function QuickActionCard({
         </View>
 
         {/* text stack */}
-        <View style={{ marginTop: 8, gap: 3 }}>
+        <View style={{ marginTop: dense ? 7 : 8, gap: 3 }}>
           <Text
             style={{
               fontSize: 11,
@@ -273,7 +160,7 @@ function QuickActionCard({
 
           <Text
             style={{
-              fontSize: 14,
+              fontSize: dense ? 13 : 14,
               fontWeight: "800",
               color: "#fff",
               letterSpacing: -0.2,
@@ -290,9 +177,10 @@ function QuickActionCard({
               color: isDonate
                 ? "rgba(255,255,255,0.92)"
                 : "rgba(255,255,255,0.70)",
-                lineHeight: 16,
+              lineHeight: 16,
             }}
             numberOfLines={2}
+            ellipsizeMode="tail"
           >
             {subtitle}
           </Text>
@@ -304,10 +192,19 @@ function QuickActionCard({
 
 export function HomeScreen() {
   const navigation = useNavigation<any>();
+  const insets = useSafeAreaInsets();
+  const SMALL = isSmallPhone();
+
   const { now, status, play, pause } = useRadioPlayer();
 
   const isLoading = status === "loading";
   const isPlaying = status === "playing";
+
+  // ✅ tokens responsive-safe
+  const HEADER_PB = SMALL ? 60 : 70;
+  const VERSE_OVERLAP = SMALL ? -36 : -44;
+  const FAB_SIZE = SMALL ? 58 : 64;
+  const FAB_BOTTOM = SMALL ? -22 : -26;
 
   /** ✅ Halo / pulse animation */
   const pulse = useRef(new Animated.Value(0)).current;
@@ -359,7 +256,9 @@ export function HomeScreen() {
     <SafeAreaView style={{ flex: 1 }} edges={["top"]}>
       <View style={{ flex: 1, backgroundColor: "#0E1624" }}>
         <ScrollView
-          contentContainerStyle={{ paddingBottom: spacing.xl }}
+          contentContainerStyle={{
+            paddingBottom: spacing.xl + insets.bottom + 18, // ✅ safe bottom real
+          }}
           showsVerticalScrollIndicator={false}
         >
           {/* HEADER dentro del Scroll (para overlap del versículo) */}
@@ -370,7 +269,7 @@ export function HomeScreen() {
             style={{
               paddingHorizontal: spacing.lg,
               paddingTop: spacing.md,
-              paddingBottom: 70,
+              paddingBottom: HEADER_PB,
               borderBottomLeftRadius: 28,
               borderBottomRightRadius: 28,
               overflow: "hidden",
@@ -414,7 +313,7 @@ export function HomeScreen() {
               <View style={{ gap: 6 }}>
                 <Text
                   style={{
-                    fontSize: 22,
+                    fontSize: vw(SMALL ? 20 : 22),
                     fontWeight: "900",
                     color: "#FFFFFF",
                     letterSpacing: -0.6,
@@ -430,6 +329,7 @@ export function HomeScreen() {
                     color: "rgba(255,255,255,0.88)",
                     letterSpacing: 0.2,
                   }}
+                  numberOfLines={1}
                 >
                   Es Tiempo de Alzar la Voz
                 </Text>
@@ -452,6 +352,7 @@ export function HomeScreen() {
                   color: "rgba(255,255,255,0.72)",
                   letterSpacing: 0.3,
                 }}
+                numberOfLines={1}
               >
                 Ministerio Dios es Suficiente
               </Text>
@@ -467,7 +368,7 @@ export function HomeScreen() {
             }}
           >
             {/* Versículo flotante (overlap real) */}
-            <View style={{ marginTop: -44, position: "relative", zIndex: 20 }}>
+            <View style={{ marginTop: VERSE_OVERLAP, position: "relative", zIndex: 20 }}>
               <VerseOfTheDay compact />
 
               {/* FAB invadiendo el card del versículo */}
@@ -475,22 +376,22 @@ export function HomeScreen() {
                 style={{
                   position: "absolute",
                   right: 14,
-                  bottom: -26,
+                  bottom: FAB_BOTTOM,
                   zIndex: 60,
                   elevation: 60,
                 }}
               >
-                {/* Halo animado: MÁS visible */}
+                {/* Halo animado */}
                 {isPlaying && (
                   <Animated.View
                     pointerEvents="none"
                     style={{
                       position: "absolute",
-                      left: -14,
-                      top: -14,
-                      width: 92,
-                      height: 92,
-                      borderRadius: 46,
+                      left: -(FAB_SIZE * 0.22),
+                      top: -(FAB_SIZE * 0.22),
+                      width: FAB_SIZE + 28,
+                      height: FAB_SIZE + 28,
+                      borderRadius: (FAB_SIZE + 28) / 2,
                       borderWidth: 2,
                       borderColor: "rgba(245, 158, 80, 0.65)",
                       backgroundColor: "rgba(245, 158, 80, 0.10)",
@@ -514,9 +415,9 @@ export function HomeScreen() {
                 <Pressable
                   onPress={handleFabPress}
                   style={({ pressed }) => ({
-                    width: 64,
-                    height: 64,
-                    borderRadius: 32,
+                    width: FAB_SIZE,
+                    height: FAB_SIZE,
+                    borderRadius: FAB_SIZE / 2,
                     backgroundColor: "#FFFFFF",
                     alignItems: "center",
                     justifyContent: "center",
@@ -548,15 +449,17 @@ export function HomeScreen() {
                 </Pressable>
               </View>
 
-              <View style={{ height: 22 }} />
+              {/* spacer para que el FAB no tape lo siguiente */}
+              <View style={{ height: SMALL ? 18 : 22 }} />
             </View>
 
             {/* Programación (Carrusel) */}
-            <View style={{ marginTop: 34 }}>
-              <HomeScheduleCarousel
-                onOpenRadio={() => navigation.navigate("Radio")}
-              />
+            <View style={{ marginTop: SMALL ? 28 : 34 }}>
+              <HomeScheduleCarousel onOpenRadio={() => navigation.navigate("Radio")} />
             </View>
+
+            {/* Debug opcional (puedes borrar luego) */}
+            {/* <Text style={{ color: "#fff", opacity: 0.6 }}>{npTitle} • {npHost} • {npIsLive ? "LIVE" : "OFF"}</Text> */}
 
             {/* Accesos rápidos — premium grid */}
             <View style={{ gap: spacing.sm, marginTop: 2 }}>
@@ -573,6 +476,7 @@ export function HomeScreen() {
 
               <View style={{ flexDirection: "row", gap: spacing.sm }}>
                 <QuickActionCard
+                  dense={SMALL}
                   label="ESCUCHAR"
                   title="Radio en vivo"
                   subtitle="Alabanza • Oración"
@@ -581,6 +485,7 @@ export function HomeScreen() {
                 />
 
                 <QuickActionCard
+                  dense={SMALL}
                   label="CRECER"
                   title="Podcasts"
                   subtitle="Mensajes • Devocionales"
@@ -591,6 +496,7 @@ export function HomeScreen() {
 
               <View style={{ flexDirection: "row", gap: spacing.sm }}>
                 <QuickActionCard
+                  dense={SMALL}
                   label="ORACIÓN"
                   title="Pide oración"
                   subtitle="Comparte tu necesidad"
@@ -599,6 +505,7 @@ export function HomeScreen() {
                 />
 
                 <QuickActionCard
+                  dense={SMALL}
                   label="DONAR"
                   title="Apoya"
                   subtitle="Haz crecer la misión"
@@ -625,13 +532,7 @@ export function HomeScreen() {
               </Text>
 
               <TouchableOpacity onPress={() => navigation.navigate("Give")}>
-                <Text
-                  style={{
-                    fontSize: 13,
-                    fontWeight: "900",
-                    color: "#9CC3FF",
-                  }}
-                >
+                <Text style={{ fontSize: 13, fontWeight: "900", color: "#9CC3FF" }}>
                   Apoyar la misión →
                 </Text>
               </TouchableOpacity>

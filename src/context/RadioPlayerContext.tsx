@@ -56,14 +56,32 @@ export function RadioPlayerProvider({ children }: { children: React.ReactNode })
 
   /* ===============================
      AUDIO MODE (BACKGROUND REAL)
+     Nota: para iOS background con pantalla apagada necesitas también:
+     ios.infoPlist.UIBackgroundModes = ["audio"] en app.json/app.config.js
   =============================== */
   useEffect(() => {
-    Audio.setAudioModeAsync({
-      staysActiveInBackground: true,
-      playsInSilentModeIOS: true,
-      interruptionModeAndroid: Audio.INTERRUPTION_MODE_ANDROID_DO_NOT_MIX,
-      shouldDuckAndroid: false,
-    });
+    let mounted = true;
+
+    (async () => {
+      try {
+        await Audio.setAudioModeAsync({
+          staysActiveInBackground: true, // ✅ background
+          playsInSilentModeIOS: true, // ✅ iOS mute switch
+          allowsRecordingIOS: false,
+
+          interruptionModeIOS: Audio.INTERRUPTION_MODE_IOS_DO_NOT_MIX,
+          interruptionModeAndroid: Audio.INTERRUPTION_MODE_ANDROID_DO_NOT_MIX,
+
+          shouldDuckAndroid: false,
+          playThroughEarpieceAndroid: false,
+        });
+      } catch (e) {
+        console.log("Audio mode error:", e);
+      }
+    })();
+    return () => {
+    mounted = false;
+  };
   }, []);
 
   /* ===============================
@@ -73,6 +91,7 @@ export function RadioPlayerProvider({ children }: { children: React.ReactNode })
     if (!statusUpdate?.isLoaded) {
       if (statusUpdate?.error) {
         console.log("Stream error:", statusUpdate.error);
+        setStatus("error");
       }
       return;
     }
@@ -87,7 +106,7 @@ export function RadioPlayerProvider({ children }: { children: React.ReactNode })
   const createSound = useCallback(async () => {
     const { sound } = await Audio.Sound.createAsync(
       { uri: RADIO_CONFIG.STREAM_URL },
-      { shouldPlay: false },
+      { shouldPlay: false, playThroughEarpieceAndroid: false },
       onPlaybackStatusUpdate
     );
 
@@ -115,6 +134,7 @@ export function RadioPlayerProvider({ children }: { children: React.ReactNode })
         try {
           await createSound();
           await soundRef.current?.playAsync();
+          setStatus("playing");
         } catch (err) {
           console.log("Reconnect failed:", err);
           setStatus("error");
@@ -137,6 +157,14 @@ export function RadioPlayerProvider({ children }: { children: React.ReactNode })
 
     try {
       setStatus("loading");
+
+      await Audio.setAudioModeAsync({
+      staysActiveInBackground: true,
+      playsInSilentModeIOS: true,
+      interruptionModeIOS: Audio.INTERRUPTION_MODE_IOS_DO_NOT_MIX,
+      interruptionModeAndroid: Audio.INTERRUPTION_MODE_ANDROID_DO_NOT_MIX,
+      shouldDuckAndroid: false,
+    });
 
       if (!soundRef.current) {
         await createSound();
