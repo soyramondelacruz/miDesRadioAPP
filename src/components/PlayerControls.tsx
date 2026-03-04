@@ -51,21 +51,23 @@ export function PlayerControls({ status, onPlay, onPause }: Props) {
       }
     }, [isPlaying]);
   return (
-    <View
-      style={{
-        backgroundColor: colors.surface,
-        borderRadius: 24,
-        padding: spacing.lg,
-        flexDirection: "row",
-        alignItems: "center",
-        shadowColor: "#000",
-        shadowOpacity: 0.05,
-        shadowRadius: 25,
-        shadowOffset: { width: 0, height: 8 },
-        elevation: 10,
-        marginBottom: spacing.lg,
-      }}
-    >
+   <View
+  style={{
+    backgroundColor: "rgba(255,255,255,0.08)",
+    borderRadius: 18,
+    padding: spacing.lg,
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.10)",
+    shadowColor: "#000",
+    shadowOpacity: 0.22,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 12,
+    marginBottom: spacing.lg,
+  }}
+>
       {/* Botón Play */}
       <Animated.View
   style={{
@@ -112,7 +114,7 @@ export function PlayerControls({ status, onPlay, onPause }: Props) {
           style={{
             fontSize: 18,
             fontWeight: "800",
-            color: colors.textPrimary,
+            color: "#ffffff",
           }}
         >
           miDes Radio
@@ -123,7 +125,7 @@ export function PlayerControls({ status, onPlay, onPause }: Props) {
             marginTop: 4,
             fontSize: 14,
             fontWeight: "600",
-            color: isPlaying || isLoading ? colors.accent : colors.textSecondary,
+            color: isPlaying || isLoading ? "#9CC3FF" : "rgba(255,255,255,0.60)",
             opacity: isPlaying ? 1 : 0.7,
             letterSpacing: 0.3,
           }}
@@ -135,7 +137,7 @@ export function PlayerControls({ status, onPlay, onPause }: Props) {
           style={{
             marginTop: 6,
             fontSize: 13,
-            color: colors.textSecondary,
+            color: "rgba(255,255,255,0.68)",
 
           }}
         >
