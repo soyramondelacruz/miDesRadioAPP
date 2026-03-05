@@ -5,18 +5,25 @@ import {
   DefaultTheme,
   DarkTheme,
 } from "@react-navigation/native";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { View } from "react-native";
 
 import { AppTabs } from "./AppTabs";
 import { MiniPlayer } from "../components/MiniPlayer";
+import { ProgramDetailScreen } from "../screens/ProgramDetailScreen";
+import { PrayerScreen } from "../screens/PrayerScreen";
+
+export type RootStackParamList = {
+  Tabs: undefined;
+  ProgramDetail: { programId: string };
+  Prayer: undefined;
+};
+
+const Stack = createNativeStackNavigator<RootStackParamList>();
 
 function getActiveRouteName(state: any): string {
   const route = state.routes[state.index];
-
-  if (route.state) {
-    return getActiveRouteName(route.state);
-  }
-
+  if (route.state) return getActiveRouteName(route.state);
   return route.name;
 }
 
@@ -25,7 +32,6 @@ export function RootNavigator({ theme }: any) {
   const [currentRoute, setCurrentRoute] = React.useState("Radio");
 
   const isDark = theme?.background === "#0E1624";
-
   const baseTheme = isDark ? DarkTheme : DefaultTheme;
 
   const navigationTheme = {
@@ -47,17 +53,31 @@ export function RootNavigator({ theme }: any) {
       theme={navigationTheme}
       onStateChange={() => {
         const state = navigationRef.getRootState();
-        if (state) {
-          const activeRoute = getActiveRouteName(state);
-          setCurrentRoute(activeRoute);
-        }
+        if (state) setCurrentRoute(getActiveRouteName(state));
       }}
     >
       <View style={{ flex: 1, backgroundColor: navigationTheme.colors.background }}>
-        <AppTabs />
+        {/* STACK */}
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="Tabs" component={AppTabs} />
 
+          <Stack.Screen
+            name="ProgramDetail"
+            component={ProgramDetailScreen}
+            options={{ headerShown: true, title: "Programa" }}
+          />
+
+          <Stack.Screen
+            name="Prayer"
+            component={PrayerScreen}
+            options={{ headerShown: true, title: "Oración" }}
+          />
+        </Stack.Navigator>
+
+        {/* MINI PLAYER (solo si NO estás en Radio) */}
         {currentRoute !== "Radio" && (
           <View
+            pointerEvents="box-none"
             style={{
               position: "absolute",
               left: 0,

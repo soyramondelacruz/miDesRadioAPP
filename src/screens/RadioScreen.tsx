@@ -20,6 +20,11 @@ import { spacing } from "../theme";
 import { useRadioPlayer } from "../context/RadioPlayerContext";
 import { weeklySchedule, STATION_TIMEZONE } from "../data/schedule";
 import { NowPlayingCard } from "../components/NowPlayingCard";
+import { UpcomingProgramsCarousel } from "../components/UpcomingProgramsCarousel";
+
+
+
+
 const { height: SCREEN_H } = Dimensions.get("window");
 
 function safeText(v?: string | null) {
@@ -359,6 +364,7 @@ const progressLabel = useMemo(() => {
   return (
     <View style={{ flex: 1, backgroundColor: "#0E1624" }}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 28 }}>
+       
         {/* HEADER AZUL */}
         <LinearGradient
           colors={["#0B1220", "#1E4F93", "#1F5FAE", "#163A6B", "#0E1624"]}
@@ -588,90 +594,15 @@ const progressLabel = useMemo(() => {
              
           
 
-          {/* WHAT'S NEXT / PROGRAM CAROUSEL */}
-          <View style={{ marginTop: 12 }}>
-            <Text
-              style={{
-                fontSize: 16,
-                fontWeight: "900",
-                color: "#FFFFFF",
-                marginBottom: 12,
-              }}
-            >
-              Lo que viene
-            </Text>
-
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12, paddingBottom: 6 }}>
-              {upcoming.map((p, idx) => (
-                <View
-                  key={`${p.title}-${idx}`}
-                  style={{
-                    width: 300,
-                    borderRadius: 18,
-                    overflow: "hidden",
-                    backgroundColor: "rgba(255,255,255,0.06)",
-                    borderWidth: 1,
-                    borderColor: "rgba(255,255,255,0.10)",
-                  }}
-                >
-                  <View style={{ flexDirection: "row", alignItems: "center", padding: 14, gap: 12 }}>
-                    {/* mini artwork */}
-                    <View
-                      style={{
-                        width: 64,
-                        height: 64,
-                        borderRadius: 14,
-                        overflow: "hidden",
-                        backgroundColor: "rgba(156,195,255,0.12)",
-                        borderWidth: 1,
-                        borderColor: "rgba(156,195,255,0.18)",
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                    >
-                      <Text style={{ color: "rgba(255,255,255,0.85)", fontWeight: "900" }}>
-                        {p.title?.trim()?.[0]?.toUpperCase() ?? "P"}
-                      </Text>
-                    </View>
-
-                    <View style={{ flex: 1, minWidth: 0 }}>
-                      <Text numberOfLines={1} style={{ fontSize: 16, fontWeight: "900", color: "#FFFFFF" }}>
-                        {p.title}
-                      </Text>
-                      <Text numberOfLines={1} style={{ marginTop: 4, fontSize: 13, fontWeight: "700", color: "rgba(255,255,255,0.72)" }}>
-                        {p.host ? p.host : `${p.start} – ${p.end}`}
-                      </Text>
-                    </View>
-
-                    <Pressable
-                      onPress={() => {
-                        setSelectedProgram(p);
-                        setProgramSheetOpen(true);
-                      }}
-                      style={({ pressed }) => ({
-                        width: 40,
-                        height: 40,
-                        borderRadius: 14,
-                        alignItems: "center",
-                        justifyContent: "center",
-                        backgroundColor: pressed ? "rgba(255,255,255,0.10)" : "rgba(255,255,255,0.06)",
-                        borderWidth: 1,
-                        borderColor: "rgba(255,255,255,0.10)",
-                      })}
-                    >
-                      <Feather name="more-horizontal" size={18} color="rgba(255,255,255,0.85)" />
-                    </Pressable>
-                  </View>
-                </View>
-              ))}
-            </ScrollView>
-          </View>
-
-          {/* Optional spacing */}
-          <View style={{ height: 18 }} />
-      </View>
-  
-      </ScrollView>
+        {/* WHAT'S NEXT / PROGRAM CAROUSEL */}
+<UpcomingProgramsCarousel
+  title="Lo que viene"
+  programs={upcoming}
+  onOpenProgramMenu={(p) => {
+    setSelectedProgram(p);
+    setProgramSheetOpen(true);
+  }}
+/>
 
       {/* MAIN MENU SHEET */}
       <SlidingSheet
@@ -697,5 +628,8 @@ const progressLabel = useMemo(() => {
         ]}
       />
     </View>
+    </ScrollView>
+    </View>
+    
   );
 }

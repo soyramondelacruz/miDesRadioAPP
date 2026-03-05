@@ -1,29 +1,42 @@
 import React from "react";
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { NavigationContainer } from "@react-navigation/native";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
-import { RadioScreen } from "../screens/RadioScreen";
-import { NowPlayingScreen } from "../screens/NowPlayingScreen";
-import { ScheduleScreen } from "../screens/ScheduleScreen";
-import { ContactScreen } from "../screens/ContactScreen";
+import { AppTabs } from "./AppTabs";
+import { ProgramDetailScreen } from "../screens/ProgramDetailScreen";
+import { PrayerScreen } from "../screens/PrayerScreen";
 
-export type RootTabsParamList = {
-  Radio: undefined;
-  Ahora: undefined;
-  Programacion: undefined;
+export type AppStackParamList = {
+  Tabs: undefined;
+  ProgramDetail: { programId: string };
+  Prayer: undefined;
 };
 
-const Tab = createBottomTabNavigator<RootTabsParamList>();
+const Stack = createNativeStackNavigator<AppStackParamList>();
 
 export function AppNavigator() {
   return (
     <NavigationContainer>
-      <Tab.Navigator screenOptions={{ headerTitleAlign: "center" }}>
-        <Tab.Screen name="Radio" component={RadioScreen} />
-        <Tab.Screen name="Ahora" component={NowPlayingScreen} />
-        <Tab.Screen name="Programacion" component={ScheduleScreen} options={{ title: "Programación" }} />
-        <Tab.Screen name="Contacto" component={ContactScreen} />
-      </Tab.Navigator>
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
+        
+        {/* Tabs principales */}
+        <Stack.Screen name="Tabs" component={AppTabs} />
+
+        {/* Detalle de programa */}
+        <Stack.Screen
+          name="ProgramDetail"
+          component={ProgramDetailScreen}
+          options={{ headerShown: true, title: "Programa" }}
+        />
+
+        {/* Pantalla de oración (fuera del TabBar) */}
+        <Stack.Screen
+          name="Prayer"
+          component={PrayerScreen}
+          options={{ headerShown: true, title: "Oración" }}
+        />
+
+      </Stack.Navigator>
     </NavigationContainer>
   );
 }

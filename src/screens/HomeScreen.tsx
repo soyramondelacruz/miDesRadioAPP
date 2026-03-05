@@ -13,7 +13,7 @@ import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import { useNavigation } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Feather } from "@expo/vector-icons";
-
+import { Image } from "react-native";
 import { useRadioPlayer } from "../context/RadioPlayerContext";
 import { VerseOfTheDay } from "../components/VerseOfTheDay";
 import { spacing } from "../theme";
@@ -201,7 +201,7 @@ export function HomeScreen() {
   const isPlaying = status === "playing";
 
   // ✅ tokens responsive-safe
-  const HEADER_PB = SMALL ? 60 : 70;
+  const HEADER_PB = SMALL ? 58 : 66; // un poco más premium (menos “bloque”)
   const VERSE_OVERLAP = SMALL ? -36 : -44;
   const FAB_SIZE = SMALL ? 58 : 64;
   const FAB_BOTTOM = SMALL ? -22 : -26;
@@ -252,113 +252,109 @@ export function HomeScreen() {
   const npHost = now.data?.show?.host ?? now.data?.track?.artist ?? "—";
   const npIsLive = !!now.data?.isLive;
 
+  
+  const HEADER_TOP = Math.max(insets.top, 14);
+  const HEADER_BOTTOM = 85;
+
   return (
-    <SafeAreaView style={{ flex: 1 }} edges={["top"]}>
+    <SafeAreaView style={{ flex: 1 }} edges={[]}>
       <View style={{ flex: 1, backgroundColor: "#0E1624" }}>
         <ScrollView
           contentContainerStyle={{
-            paddingBottom: spacing.xl + insets.bottom + 18, // ✅ safe bottom real
+            paddingBottom: 28,
           }}
           showsVerticalScrollIndicator={false}
         >
-          {/* HEADER dentro del Scroll (para overlap del versículo) */}
-          <LinearGradient
-            colors={["#1F5FAE", "#1E4E8A", "#163A6B"]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={{
-              paddingHorizontal: spacing.lg,
-              paddingTop: spacing.md,
-              paddingBottom: HEADER_PB,
-              borderBottomLeftRadius: 28,
-              borderBottomRightRadius: 28,
-              overflow: "hidden",
-            }}
-          >
-            {/* Watermark (marca) */}
-            <View
-              pointerEvents="none"
-              style={{
-                position: "absolute",
-                right: -10,
-                top: -12,
-                width: 180,
-                height: 180,
-                borderRadius: 999,
-                backgroundColor: "rgba(255,255,255,0.08)",
-                transform: [{ rotate: "18deg" }],
-              }}
-            />
-            <View
-              pointerEvents="none"
-              style={{
-                position: "absolute",
-                right: 18,
-                top: 18,
-                width: 110,
-                height: 110,
-                borderRadius: 999,
-                backgroundColor: "rgba(255,255,255,0.06)",
-              }}
-            />
+          {/* HEADER (idéntico a RadioScreen, pero CTA Donar) */}
+<LinearGradient
+  colors={["#0B1220", "#1E4F93", "#1F5FAE", "#163A6B", "#0E1624"]}
+  start={{ x: 0.5, y: 0 }}
+  end={{ x: 0.5, y: 1.25 }}
+  style={{
+    paddingTop: HEADER_TOP - 10,
+    paddingHorizontal: spacing.lg,
+    paddingBottom: HEADER_PB,
+    borderBottomLeftRadius: 0,
+    borderBottomRightRadius: 0,
+    overflow: "hidden",
+    shadowColor: "#000",
+    shadowOpacity: 0.25,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 12,
+  }}
+>
+  {/* watermark sutil */}
+  <View
+    pointerEvents="none"
+    style={{
+      position: "absolute",
+      right: -16,
+      top: -18,
+      width: 190,
+      height: 190,
+      borderRadius: 999,
+      backgroundColor: "rgba(255,255,255,0.07)",
+      transform: [{ rotate: "18deg" }],
+    }}
+  />
+  <View
+    pointerEvents="none"
+    style={{
+      position: "absolute",
+      right: 30,
+      top: 30,
+      width: 110,
+      height: 110,
+      borderRadius: 999,
+      backgroundColor: "rgba(255,255,255,0.05)",
+    }}
+  />
 
-            {/* Header content */}
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                alignItems: "flex-start",
-              }}
-            >
-              <View style={{ gap: 6 }}>
-                <Text
-                  style={{
-                    fontSize: vw(SMALL ? 20 : 22),
-                    fontWeight: "900",
-                    color: "#FFFFFF",
-                    letterSpacing: -0.6,
-                  }}
-                >
-                  miDes Radio
-                </Text>
+  {/* Top row: logo + CTA */}
+  <View
+    style={{
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+    }}
+  >
+    <View style={{ flexDirection: "row", alignItems: "center", gap: 10, marginLeft: -25 }}>
+      <Image
+        source={require("../../assets/mides-radio-logo.png")}
+        style={{
+          width: 160,
+          height: 56,
+          resizeMode: "contain",
+          marginTop: 12,
+          paddingLeft: 0,
+        }}
+      />
+    </View>
 
-                <Text
-                  style={{
-                    fontSize: 12,
-                    fontWeight: "700",
-                    color: "rgba(255,255,255,0.88)",
-                    letterSpacing: 0.2,
-                  }}
-                  numberOfLines={1}
-                >
-                  Es Tiempo de Alzar la Voz
-                </Text>
-
-                <View
-                  style={{
-                    marginTop: 6,
-                    height: 1,
-                    width: 44,
-                    backgroundColor: "rgba(255,255,255,0.35)",
-                  }}
-                />
-              </View>
-
-              <Text
-                style={{
-                  marginTop: 8,
-                  fontSize: 10,
-                  fontWeight: "500",
-                  color: "rgba(255,255,255,0.72)",
-                  letterSpacing: 0.3,
-                }}
-                numberOfLines={1}
-              >
-                Ministerio Dios es Suficiente
-              </Text>
-            </View>
-          </LinearGradient>
-
+    <Pressable
+      onPress={() => navigation.navigate("Give")}
+      style={({ pressed }) => ({
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 8,
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+        borderRadius: 999,
+        backgroundColor: "rgba(255,255,255,0.10)",
+        borderWidth: 1,
+        borderColor: "rgba(255,255,255,0.14)",
+        opacity: pressed ? 0.92 : 1,
+      })}
+    >
+      <Feather name="heart" size={16} color="rgba(255,255,255,0.90)" />
+      <Text style={{ fontSize: 13, fontWeight: "900", color: "rgba(255,255,255,0.95)" }}>
+        Donar
+      </Text>
+    </Pressable>
+  </View>
+</LinearGradient>
+     
           {/* CONTENIDO dark */}
           <View
             style={{
@@ -458,9 +454,6 @@ export function HomeScreen() {
               <HomeScheduleCarousel onOpenRadio={() => navigation.navigate("Radio")} />
             </View>
 
-            {/* Debug opcional (puedes borrar luego) */}
-            {/* <Text style={{ color: "#fff", opacity: 0.6 }}>{npTitle} • {npHost} • {npIsLive ? "LIVE" : "OFF"}</Text> */}
-
             {/* Accesos rápidos — premium grid */}
             <View style={{ gap: spacing.sm, marginTop: 2 }}>
               <Text
@@ -541,6 +534,7 @@ export function HomeScreen() {
             <View style={{ height: 12 }} />
           </View>
         </ScrollView>
+        
       </View>
     </SafeAreaView>
   );

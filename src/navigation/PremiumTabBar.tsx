@@ -1,11 +1,5 @@
 import React from "react";
-import {
-  View,
-  Text,
-  Pressable,
-  Platform,
-  StyleSheet,
-} from "react-native";
+import { View, Text, Pressable, Platform, StyleSheet } from "react-native";
 import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 
@@ -22,6 +16,10 @@ function getIcon(routeName: string, color: string, focused: boolean) {
 
     case "Podcasts":
       return <Feather name="mic" size={size} color={color} />;
+
+    case "Programs":
+      // Hub de programas
+      return <Feather name="calendar" size={size} color={color} />;
 
     case "Prayer":
       return (
@@ -40,11 +38,7 @@ function getIcon(routeName: string, color: string, focused: boolean) {
   }
 }
 
-export function PremiumTabBar({
-  state,
-  descriptors,
-  navigation,
-}: BottomTabBarProps) {
+export function PremiumTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   return (
     <View style={styles.wrap}>
       <View style={styles.bar}>
@@ -101,9 +95,7 @@ export function PremiumTabBar({
                   {getIcon(route.name, "#fff", isFocused)}
                 </Pressable>
 
-                <Text style={[styles.label, { color }]}>
-                  {String(label)}
-                </Text>
+                <Text style={[styles.label, { color }]}>{String(label)}</Text>
               </View>
             );
           }
@@ -113,19 +105,14 @@ export function PremiumTabBar({
               key={route.key}
               onPress={onPress}
               onLongPress={onLongPress}
-              style={({ pressed }) => [
-                styles.item,
-                { opacity: pressed ? 0.85 : 1 },
-              ]}
+              style={({ pressed }) => [styles.item, { opacity: pressed ? 0.85 : 1 }]}
             >
               <View style={styles.iconWrap}>
                 {getIcon(route.name, color, isFocused)}
                 {isFocused ? <View style={styles.dot} /> : null}
               </View>
 
-              <Text style={[styles.label, { color }]}>
-                {String(label)}
-              </Text>
+              <Text style={[styles.label, { color }]}>{String(label)}</Text>
             </Pressable>
           );
         })}
