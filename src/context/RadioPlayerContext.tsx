@@ -1,3 +1,4 @@
+// src/context/RadioPlayerContext.tsx
 import React, {
   createContext,
   useContext,
@@ -23,6 +24,7 @@ interface RadioContextType {
   applySimulatedTime: (iso: string) => void;
   resetSimulatedTime: () => void;
 
+  /** ✅ Único reloj para toda la app */
   effectiveNow: Date;
 }
 
@@ -34,14 +36,24 @@ export function RadioPlayerProvider({ children }: { children: React.ReactNode })
   const isReconnectingRef = useRef(false);
 
   const [status, setStatus] = useState<Status>("idle");
-
   const [simulatedISOTime, setSimulatedISOTime] = useState<string | null>(null);
+
+  // ✅ Un solo "tick" global para refrescar el reloj efectivo (30s)
+  const [clockTick, setClockTick] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setClockTick((t) => t + 1), 30_000);
+    return () => clearInterval(id);
+  }, []);
 
   const now = useNowPlaying(30000);
 
   const effectiveNow = useMemo(() => {
-    return simulatedISOTime ? new Date(simulatedISOTime) : new Date();
-  }, [simulatedISOTime]);
+    // Si hay hora simulada, se respeta (queda “congelada” hasta que la cambies).
+    // Si quieres que avance simulada, lo hacemos después.
+    if (simulatedISOTime) return new Date(simulatedISOTime);
+    // clockTick fuerza recálculo cada 30s
+    return new Date();
+  }, [simulatedISOTime, clockTick]);
 
   const applySimulatedTime = useCallback((iso: string) => {
     setSimulatedISOTime(iso);
@@ -80,7 +92,7 @@ export function RadioPlayerProvider({ children }: { children: React.ReactNode })
   }, []);
 
   // ===============================
-  // Lock screen metadata (important)
+  // Lock screen metadata
   // ===============================
   const activateLockScreen = useCallback(() => {
     const p = playerRef.current;
@@ -123,7 +135,6 @@ export function RadioPlayerProvider({ children }: { children: React.ReactNode })
         try {
           const p = ensurePlayer();
 
-          // Si tu versión soporta replace, ayuda mucho cuando el stream muere
           if (typeof (p as any).replace === "function") {
             await (p as any).replace({ uri: RADIO_CONFIG.STREAM_URL });
           }
@@ -154,7 +165,6 @@ export function RadioPlayerProvider({ children }: { children: React.ReactNode })
     try {
       setStatus("loading");
 
-      // Re-aplicar modo por seguridad (barato y robusto)
       await Audio.setAudioModeAsync({
         playsInSilentMode: true,
         shouldPlayInBackground: true,

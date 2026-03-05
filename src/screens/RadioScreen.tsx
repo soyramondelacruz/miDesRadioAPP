@@ -1,3 +1,4 @@
+// src/screens/RadioScreen.tsx
 import React, { useMemo, useRef, useEffect, useState } from "react";
 import {
   View,
@@ -21,9 +22,6 @@ import { useRadioPlayer } from "../context/RadioPlayerContext";
 import { weeklySchedule, STATION_TIMEZONE } from "../data/schedule";
 import { NowPlayingCard } from "../components/NowPlayingCard";
 import { UpcomingProgramsCarousel } from "../components/UpcomingProgramsCarousel";
-
-
-
 
 const { height: SCREEN_H } = Dimensions.get("window");
 
@@ -100,7 +98,6 @@ function SlidingSheet({
                 overflow: "hidden",
               }}
             >
-              {/* handle */}
               <View style={{ alignItems: "center", paddingTop: 10, paddingBottom: 8 }}>
                 <View
                   style={{
@@ -214,8 +211,9 @@ function timeToMinutes(time: string) {
 
 function isNowInProgram(nowMin: number, start: number, end: number) {
   if (end > start) return nowMin >= start && nowMin < end;
-  return nowMin >= start || nowMin < end; // crosses midnight
+  return nowMin >= start || nowMin < end;
 }
+
 function getProgramProgress(nowMin: number, start: number, end: number) {
   let duration: number;
   let elapsed: number;
@@ -224,7 +222,6 @@ function getProgramProgress(nowMin: number, start: number, end: number) {
     duration = end - start;
     elapsed = nowMin - start;
   } else {
-    // cruza medianoche
     duration = 1440 - start + end;
     elapsed = nowMin >= start ? nowMin - start : 1440 - start + nowMin;
   }
@@ -238,6 +235,7 @@ function getRemainingMinutes(nowMin: number, start: number, end: number) {
   if (nowMin >= start) return Math.max(0, 1440 - nowMin + end);
   return Math.max(0, end - nowMin);
 }
+
 function getCurrentAndUpcoming(day: number, minutes: number) {
   const today = weeklySchedule[day] || [];
   const upcoming: any[] = [];
@@ -251,14 +249,12 @@ function getCurrentAndUpcoming(day: number, minutes: number) {
     if (!current && isNowInProgram(minutes, s, e)) current = p;
   }
 
-  // upcoming = next ones (or firsts if none active)
   for (let i = 0; i < today.length; i++) {
     const p = today[i];
     const s = timeToMinutes(p.start);
     if (minutes <= s) upcoming.push(p);
   }
 
-  // if day ended, show first 3 of day
   if (upcoming.length === 0) upcoming.push(...today.slice(0, 4));
 
   return { current, upcoming: upcoming.slice(0, 6) };
@@ -270,7 +266,9 @@ function getCurrentAndUpcoming(day: number, minutes: number) {
 export function RadioScreen() {
   const navigation = useNavigation<any>();
   const insets = useSafeAreaInsets();
-  const { status, play, pause, now } = useRadioPlayer();
+
+  // ✅ ahora todo usa el reloj del provider
+  const { status, play, pause, effectiveNow } = useRadioPlayer();
 
   const isLoading = status === "loading";
   const isPlaying = status === "playing";
@@ -279,60 +277,27 @@ export function RadioScreen() {
   const [programSheetOpen, setProgramSheetOpen] = useState(false);
   const [selectedProgram, setSelectedProgram] = useState<any | null>(null);
 
-  const [tick, setTick] = useState(0);
+  const stationNow = useMemo(() => getStationNow(new Date(effectiveNow)), [effectiveNow]);
 
-  useEffect(() => {
-    const id = setInterval(() => setTick((t) => t + 1), 30_000); // cada 30s
-    return () => clearInterval(id);
-  }, []);
-
-  const baseDate = useMemo(() => new Date(), [tick]);
-  const stationNow = useMemo(() => getStationNow(baseDate), [baseDate]);
-  
   const { current, upcoming } = useMemo(
     () => getCurrentAndUpcoming(stationNow.day, stationNow.minutes),
     [stationNow.day, stationNow.minutes]
   );
 
   const realProgress = useMemo(() => {
-  if (!current) return 0;
-  const start = timeToMinutes(current.start);
-  const end = timeToMinutes(current.end);
-  return getProgramProgress(stationNow.minutes, start, end);
-}, [current, stationNow.minutes]);
+    if (!current) return 0;
+    const start = timeToMinutes(current.start);
+    const end = timeToMinutes(current.end);
+    return getProgramProgress(stationNow.minutes, start, end);
+  }, [current, stationNow.minutes]);
 
-const progressLabel = useMemo(() => {
-  if (!current) return "Música continua";
-  const start = timeToMinutes(current.start);
-  const end = timeToMinutes(current.end);
-  const remaining = getRemainingMinutes(stationNow.minutes, start, end);
-  return remaining <= 1 ? "Finaliza ahora" : `Faltan ${remaining} min`;
-}, [current, stationNow.minutes]);
-
-
-  const title = useMemo(() => {
-    return (
-      safeText(now.data?.show?.title) ??
-      safeText(now.data?.track?.title) ??
-      safeText(current?.title) ??
-      "miDes Radio"
-    );
-  }, [now.data, current?.title]);
-
-  const subtitle = useMemo(() => {
-    const host = safeText(now.data?.show?.host) ?? safeText(current?.host);
-    const artist = safeText(now.data?.track?.artist);
-    if (host) return host;
-    if (artist) return artist;
-    return "Tu emisora • 24/7";
-  }, [now.data, current?.host]);
-
-  // Artwork: usa URL si la tienes, si no, placeholder
-  const artworkUri = useMemo(() => {
-    // Si luego agregas un campo, cámbialo aquí:
-    // now.data?.show?.artworkUrl / now.data?.track?.artworkUrl / etc
-    return null as string | null;
-  }, []);
+  const progressLabel = useMemo(() => {
+    if (!current) return "Música continua";
+    const start = timeToMinutes(current.start);
+    const end = timeToMinutes(current.end);
+    const remaining = getRemainingMinutes(stationNow.minutes, start, end);
+    return remaining <= 1 ? "Finaliza ahora" : `Faltan ${remaining} min`;
+  }, [current, stationNow.minutes]);
 
   function togglePlay() {
     if (isLoading) return;
@@ -340,7 +305,7 @@ const progressLabel = useMemo(() => {
     else play();
   }
 
-  /** Floating play pulse (premium, sutil) */
+  /** Floating play pulse */
   const pulse = useRef(new Animated.Value(0)).current;
   useEffect(() => {
     if (!isPlaying) {
@@ -364,18 +329,14 @@ const progressLabel = useMemo(() => {
   return (
     <View style={{ flex: 1, backgroundColor: "#0E1624" }}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 28 }}>
-       
-        {/* HEADER AZUL */}
         <LinearGradient
           colors={["#0B1220", "#1E4F93", "#1F5FAE", "#163A6B", "#0E1624"]}
           start={{ x: 0.5, y: 0 }}
           end={{ x: 0.5, y: 1.25 }}
           style={{
-            paddingTop: HEADER_TOP -10,
+            paddingTop: HEADER_TOP - 10,
             paddingHorizontal: spacing.lg,
             paddingBottom: HEADER_BOTTOM,
-            borderBottomLeftRadius: 0,
-            borderBottomRightRadius: 0,
             overflow: "hidden",
             shadowColor: "#000",
             shadowOpacity: 0.25,
@@ -384,7 +345,6 @@ const progressLabel = useMemo(() => {
             elevation: 12,
           }}
         >
-          {/* watermark sutil */}
           <View
             pointerEvents="none"
             style={{
@@ -397,7 +357,6 @@ const progressLabel = useMemo(() => {
               backgroundColor: "rgba(255,255,255,0.07)",
               transform: [{ rotate: "18deg" }],
             }}
-            
           />
           <View
             pointerEvents="none"
@@ -410,27 +369,19 @@ const progressLabel = useMemo(() => {
               borderRadius: 999,
               backgroundColor: "rgba(255,255,255,0.05)",
             }}
-
-    
           />
 
-          
-
-          {/* Top row: logo + more */}
           <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 10, marginLeft: -25, }}>
-             
-             
-              {/* LOGO (cambia la ruta si aplica) */}
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 10, marginLeft: -25 }}>
               <Image
                 source={require("../../assets/mides-radio-logo.png")}
-                style={{ 
+                style={{
                   width: 160,
-                  height: 56, 
+                  height: 56,
                   resizeMode: "contain",
                   marginTop: 12,
-                  paddingLeft: 0
-               }}
+                  paddingLeft: 0,
+                }}
               />
             </View>
 
@@ -457,179 +408,163 @@ const progressLabel = useMemo(() => {
           </View>
         </LinearGradient>
 
-        {/* CONTENT */}
         <View style={{ paddingHorizontal: spacing.lg }}>
-          
-         {/* NOW PLAYING BIG CARD (overlap) */}
-<View style={{ marginTop: -92, zIndex: 20 }}>
-  <View style={{ 
-    
-    borderRadius: 22,
-      shadowColor: "#000",
-      shadowOpacity: 0.10,
-      shadowRadius: 24,
-      shadowOffset: { width: 0, height: 10 },
-      elevation: 12,
-     }}>
-    
-    {/* Card */}
-    <NowPlayingCard 
-      title={title}
-      subtitle={subtitle}
-      isPlaying={isPlaying}
-      progress={realProgress}
-      progressLabel={progressLabel}
-    />
+          <View style={{ marginTop: -92, zIndex: 20 }}>
+            <View
+              style={{
+                borderRadius: 22,
+                shadowColor: "#000",
+                shadowOpacity: 0.10,
+                shadowRadius: 24,
+                shadowOffset: { width: 0, height: 10 },
+                elevation: 12,
+              }}
+            >
+              <NowPlayingCard
+                isPlaying={isPlaying}
+                progress={realProgress}
+                progressLabel={progressLabel}
+              />
 
-    {/* Floating Play button (invadiendo la card) */}
-    <View style={{ position: "absolute", right: 18, bottom: -44 }}>
-      {isPlaying && (
-        <Animated.View
-          pointerEvents="none"
-          style={{
-            position: "absolute",
-            left: -14,
-            top: -14,
-            width: 92,
-            height: 92,
-            borderRadius: 46,
-            borderWidth: 2,
-            borderColor: "rgba(245,158,80,0.55)",
-            backgroundColor: "rgba(245,158,80,0.10)",
-            transform: [
-              {
-                scale: pulse.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [0.98, 1.18],
-                }),
-              },
-            ],
-            opacity: pulse.interpolate({
-              inputRange: [0, 1],
-              outputRange: [0.50, 0.06],
-            }),
-          }}
-        />
-      )}
+              <View style={{ position: "absolute", right: 18, bottom: -44 }}>
+                {isPlaying && (
+                  <Animated.View
+                    pointerEvents="none"
+                    style={{
+                      position: "absolute",
+                      left: -14,
+                      top: -14,
+                      width: 92,
+                      height: 92,
+                      borderRadius: 46,
+                      borderWidth: 2,
+                      borderColor: "rgba(245,158,80,0.55)",
+                      backgroundColor: "rgba(245,158,80,0.10)",
+                      transform: [
+                        {
+                          scale: pulse.interpolate({
+                            inputRange: [0, 1],
+                            outputRange: [0.98, 1.18],
+                          }),
+                        },
+                      ],
+                      opacity: pulse.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [0.50, 0.06],
+                      }),
+                    }}
+                  />
+                )}
 
-      <Pressable
-        onPress={togglePlay}
-        style={({ pressed }) => ({
-          width: 72,
-          height: 72,
-          borderRadius: 36,
-          backgroundColor: "#FFFFFF",
-          alignItems: "center",
-          justifyContent: "center",
-          borderWidth: 2,
-          borderColor: "rgba(178,206,238,0.85)",
-          opacity: pressed ? 0.9 : 1,
-          shadowColor: "#000",
-          shadowOpacity: 0.25,
-          shadowRadius: 20,
-          shadowOffset: { width: 0, height: 12 },
-          elevation: 16,
-        })}
-      >
-        {isLoading ? (
-          <ActivityIndicator color="#1F5FAE" />
-        ) : (
-          <Ionicons
-            name={isPlaying ? "pause" : "play"}
-            size={26}
-            color="#1F5FAE"
-            style={{ marginLeft: isPlaying ? 0 : 2 }}
+                <Pressable
+                  onPress={togglePlay}
+                  style={({ pressed }) => ({
+                    width: 72,
+                    height: 72,
+                    borderRadius: 36,
+                    backgroundColor: "#FFFFFF",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    borderWidth: 2,
+                    borderColor: "rgba(178,206,238,0.85)",
+                    opacity: pressed ? 0.9 : 1,
+                    shadowColor: "#000",
+                    shadowOpacity: 0.25,
+                    shadowRadius: 20,
+                    shadowOffset: { width: 0, height: 12 },
+                    elevation: 16,
+                  })}
+                >
+                  {isLoading ? (
+                    <ActivityIndicator color="#1F5FAE" />
+                  ) : (
+                    <Ionicons
+                      name={isPlaying ? "pause" : "play"}
+                      size={26}
+                      color="#1F5FAE"
+                      style={{ marginLeft: isPlaying ? 0 : 2 }}
+                    />
+                  )}
+                </Pressable>
+              </View>
+            </View>
+
+            <View
+              style={{
+                marginTop: 14,
+                flexDirection: "row",
+                gap: 12,
+                alignItems: "center",
+              }}
+            >
+              <Pressable
+                onPress={() => {}}
+                style={({ pressed }) => ({
+                  width: 36,
+                  height: 36,
+                  borderRadius: 12,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  backgroundColor: pressed ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.08)",
+                  borderWidth: 1,
+                  borderColor: "rgba(255,255,255,0.16)",
+                })}
+              >
+                <Feather name="share-2" size={18} color="#FFFFFF" />
+              </Pressable>
+
+              <Pressable
+                onPress={() => {}}
+                style={({ pressed }) => ({
+                  width: 36,
+                  height: 36,
+                  borderRadius: 12,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  backgroundColor: pressed ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.08)",
+                  borderWidth: 1,
+                  borderColor: "rgba(255,255,255,0.16)",
+                })}
+              >
+                <Feather name="heart" size={18} color="#FFFFFF" />
+              </Pressable>
+            </View>
+
+            <View style={{ height: 26 }} />
+          </View>
+
+          <UpcomingProgramsCarousel
+            title="Lo que viene"
+            programs={upcoming}
+            onOpenProgramMenu={(p) => {
+              setSelectedProgram(p);
+              setProgramSheetOpen(true);
+            }}
           />
-        )}
-      </Pressable>
+
+          <SlidingSheet
+            visible={mainSheetOpen}
+            title="MI DES RADIO"
+            onClose={() => setMainSheetOpen(false)}
+            items={[
+              { label: "Quiero Apoyar", icon: "heart", onPress: () => navigation.navigate("Give") },
+              { label: "Compartir la app", icon: "share-2", onPress: () => console.log("Share app") },
+              { label: "Ajustes", icon: "settings", onPress: () => console.log("Settings") },
+            ]}
+          />
+
+          <SlidingSheet
+            visible={programSheetOpen}
+            title={selectedProgram ? selectedProgram.title : "PROGRAMA"}
+            onClose={() => setProgramSheetOpen(false)}
+            items={[
+              { label: "Agendar", icon: "calendar", onPress: () => console.log("Schedule program", selectedProgram) },
+              { label: "Compartir", icon: "share-2", onPress: () => console.log("Share program", selectedProgram) },
+              { label: "Ver programas anteriores", icon: "clock", onPress: () => console.log("Past episodes", selectedProgram) },
+            ]}
+          />
+        </View>
+      </ScrollView>
     </View>
-  </View>
-
-  {/* BOTONES DEBAJO DEL CARD (alineados a la izquierda) */}
-  <View
-    style={{
-      marginTop: 14,
-      flexDirection: "row",
-      gap: 12,
-      alignItems: "center",
-    }}
-  >
-    <Pressable
-      onPress={() => {}}
-      style={({ pressed }) => ({
-        width: 36,
-        height: 36,
-        borderRadius: 12,
-        alignItems: "center",
-        justifyContent: "center",
-        backgroundColor: pressed ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.08)",
-        borderWidth: 1,
-        borderColor: "rgba(255,255,255,0.16)",
-      })}
-    >
-      <Feather name="share-2" size={18} color="#FFFFFF" />
-    </Pressable>
-
-    <Pressable
-      onPress={() => {}}
-      style={({ pressed }) => ({
-        width: 36,
-        height: 36,
-        borderRadius: 12,
-        alignItems: "center",
-        justifyContent: "center",
-        backgroundColor: pressed ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.08)",
-        borderWidth: 1,
-        borderColor: "rgba(255,255,255,0.16)",
-      })}
-    >
-      <Feather name="heart" size={18} color="#FFFFFF" />
-    </Pressable>
-  </View>
-
-  {/* bottom spacing para que el Play no choque con "Lo que viene" */}
-  <View style={{ height: 26 }} />
-</View>
-
-             
-          
-
-        {/* WHAT'S NEXT / PROGRAM CAROUSEL */}
-<UpcomingProgramsCarousel
-  title="Lo que viene"
-  programs={upcoming}
-  onOpenProgramMenu={(p) => {
-    setSelectedProgram(p);
-    setProgramSheetOpen(true);
-  }}
-/>
-
-      {/* MAIN MENU SHEET */}
-      <SlidingSheet
-        visible={mainSheetOpen}
-        title="MI DES RADIO"
-        onClose={() => setMainSheetOpen(false)}
-        items={[
-          { label: "Quiero Apoyar", icon: "heart", onPress: () => navigation.navigate("Give") },
-          { label: "Compartir la app", icon: "share-2", onPress: () => console.log("Share app") },
-          { label: "Ajustes", icon: "settings", onPress: () => console.log("Settings") },
-        ]}
-      />
-
-      {/* PROGRAM MENU SHEET */}
-      <SlidingSheet
-        visible={programSheetOpen}
-        title={selectedProgram ? selectedProgram.title : "PROGRAMA"}
-        onClose={() => setProgramSheetOpen(false)}
-        items={[
-          { label: "Agendar", icon: "calendar", onPress: () => console.log("Schedule program", selectedProgram) },
-          { label: "Compartir", icon: "share-2", onPress: () => console.log("Share program", selectedProgram) },
-          { label: "Ver programas anteriores", icon: "clock", onPress: () => console.log("Past episodes", selectedProgram) },
-        ]}
-      />
-    </View>
-    </ScrollView>
-    </View>
-    
   );
 }

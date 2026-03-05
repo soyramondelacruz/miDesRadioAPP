@@ -1,9 +1,12 @@
 // src/components/NowPlayingCard.tsx
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo } from "react";
 import { View, Text, Image } from "react-native";
 import { spacing } from "../theme";
-import { weeklySchedule, STATION_TIMEZONE, Program, SCHEDULE_DEBUG } from "../data/schedule";
+
+import { weeklySchedule, STATION_TIMEZONE, Program } from "../data/schedule";
 import { getProgramVisuals } from "../data/programVisuals";
+import { programCatalogById } from "../data/programCatalog";
+import { useRadioPlayer } from "../context/RadioPlayerContext";
 
 function safeText(v?: string | null) {
   const s = (v ?? "").trim();
@@ -17,7 +20,6 @@ function timeToMinutes(t: string) {
 
 function isNowInProgram(nowMin: number, start: number, end: number) {
   if (end > start) return nowMin >= start && nowMin < end;
-  // cruza medianoche
   return nowMin >= start || nowMin < end;
 }
 
@@ -29,7 +31,6 @@ function getProgramProgress(nowMin: number, start: number, end: number) {
     duration = end - start;
     elapsed = nowMin - start;
   } else {
-    // cruza medianoche
     duration = 1440 - start + end;
     elapsed = nowMin >= start ? nowMin - start : 1440 - start + nowMin;
   }
@@ -38,7 +39,7 @@ function getProgramProgress(nowMin: number, start: number, end: number) {
   return Math.max(0, Math.min(1, elapsed / duration));
 }
 
-function getStationNow(baseDate: Date) {
+function getStationNow(date: Date) {
   const formatter = new Intl.DateTimeFormat("en-US", {
     timeZone: STATION_TIMEZONE,
     hour12: false,
@@ -47,13 +48,19 @@ function getStationNow(baseDate: Date) {
     weekday: "short",
   });
 
-  const parts = formatter.formatToParts(baseDate);
+  const parts = formatter.formatToParts(date);
   const hour = Number(parts.find((p) => p.type === "hour")?.value ?? 0);
   const minute = Number(parts.find((p) => p.type === "minute")?.value ?? 0);
   const weekdayStr = parts.find((p) => p.type === "weekday")?.value ?? "Mon";
 
   const weekdayMap: Record<string, number> = {
-    Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6,
+    Sun: 0,
+    Mon: 1,
+    Tue: 2,
+    Wed: 3,
+    Thu: 4,
+    Fri: 5,
+    Sat: 6,
   };
 
   return { day: weekdayMap[weekdayStr], minutes: hour * 60 + minute };
@@ -65,73 +72,90 @@ function getCurrentProgramAndProgress(day: number, minutes: number) {
   for (const p of today) {
     const s = timeToMinutes(p.start);
     const e = timeToMinutes(p.end);
+
     if (isNowInProgram(minutes, s, e)) {
-      return {
-        current: p,
-        progress: getProgramProgress(minutes, s, e),
-        label: `${p.start} – ${p.end}`,
-      };
+      return { current: p, progress: getProgramProgress(minutes, s, e) };
     }
   }
 
-  return { current: null as Program | null, progress: 0, label: "Música continua" };
+  return { current: null as Program | null, progress: 0 };
 }
 
 type Props = {
-  isPlaying?: boolean;
-  /** si luego quieres override por API, puedes pasar title/subtitle aquí */
+  /** NO lo pases si quieres que el card derive del schedule */
   title?: string;
   subtitle?: string;
+
+  /** Si lo pasas, sobreescribe progreso calculado */
+  progress?: number; // 0..1
+
+  /** Texto bajo la barra (si lo pasas, sobreescribe) */
+  progressLabel?: string;
+
+  /** LIVE/OFFLINE */
+  isPlaying?: boolean;
 };
 
-export function NowPlayingCard({ isPlaying = false, title, subtitle }: Props) {
-  // refresco suave del progreso
-  const [tick, setTick] = useState(0);
-  useEffect(() => {
-    const id = setInterval(() => setTick((t) => t + 1), 30_000);
-    return () => clearInterval(id);
-  }, []);
-
-  const baseDate = useMemo(() => {
-    if (SCHEDULE_DEBUG.enabled && SCHEDULE_DEBUG.simulatedISOTime) {
-      return new Date(SCHEDULE_DEBUG.simulatedISOTime);
-    }
-    return new Date();
-  }, [tick]);
+export function NowPlayingCard({
+  title,
+  subtitle,
+  progress,
+  progressLabel,
+  isPlaying = false,
+}: Props) {
+  // ✅ Único reloj de toda la app
+  const { effectiveNow } = useRadioPlayer();
 
   const derived = useMemo(() => {
+    const baseDate = new Date(effectiveNow);
+
     const { day, minutes } = getStationNow(baseDate);
-    const { current, progress, label } = getCurrentProgramAndProgress(day, minutes);
+    const { current, progress: p } = getCurrentProgramAndProgress(day, minutes);
+
+    const catalogById: Record<string, any> = (programCatalogById as any) ?? {};
 
     if (!current) {
       return {
-        current: null as Program | null,
-        artwork: getProgramVisuals(null).artwork,
+        program: null as Program | null,
         title: "Música continua",
         subtitle: "miDes Radio • 24/7",
-        progress,
-        label,
+        progress: 0,
+        label: "Música continua",
       };
     }
 
-    const v = getProgramVisuals(current);
+    const cat = catalogById[current.id];
+
+    const mergedProgram: Program = {
+      ...current,
+      title: safeText(cat?.title) ?? current.title,
+      host: safeText(cat?.subtitle) ?? safeText(current.host) ?? current.host,
+      ...(cat?.visualKey ? { visualKey: cat.visualKey } : null),
+    } as any;
+
+    const displayTitle = safeText(mergedProgram.title) ?? "miDes Radio";
+    const displaySubtitle = safeText(mergedProgram.host) ?? `${mergedProgram.start} – ${mergedProgram.end}`;
+
     return {
-      current,
-      artwork: v.artwork,
-      title: safeText(current.title) ?? "miDes Radio",
-      subtitle: safeText(current.host) ?? label,
-      progress,
-      label,
+      program: mergedProgram,
+      title: displayTitle,
+      subtitle: displaySubtitle,
+      progress: p,
+      label: `${mergedProgram.start} – ${mergedProgram.end}`,
     };
-  }, [baseDate]);
+  }, [effectiveNow]);
 
   const finalTitle = safeText(title) ?? derived.title;
   const finalSubtitle = safeText(subtitle) ?? derived.subtitle;
 
   const pct = useMemo(() => {
-    const p = Number.isFinite(derived.progress) ? derived.progress : 0;
+    const p = Number.isFinite(progress) ? (progress as number) : derived.progress;
     return Math.max(0, Math.min(1, p));
-  }, [derived.progress]);
+  }, [progress, derived.progress]);
+
+  const label = safeText(progressLabel) ?? derived.label;
+
+  const { artwork } = useMemo(() => getProgramVisuals(derived.program), [derived.program]);
 
   const CARD_H = 170;
   const ART_WRAP = 122;
@@ -153,7 +177,6 @@ export function NowPlayingCard({ isPlaying = false, title, subtitle }: Props) {
       }}
     >
       <View style={{ flexDirection: "row", height: CARD_H }}>
-        {/* Artwork */}
         <View
           style={{
             width: 140,
@@ -185,12 +208,11 @@ export function NowPlayingCard({ isPlaying = false, title, subtitle }: Props) {
                 backgroundColor: "#0E1624",
               }}
             >
-              <Image source={derived.artwork} style={{ width: "100%", height: "100%" }} resizeMode="cover" />
+              <Image source={artwork} style={{ width: "100%", height: "100%" }} resizeMode="cover" />
             </View>
           </View>
         </View>
 
-        {/* Info */}
         <View
           style={{
             flex: 1,
@@ -198,7 +220,6 @@ export function NowPlayingCard({ isPlaying = false, title, subtitle }: Props) {
             paddingVertical: spacing.lg,
           }}
         >
-          {/* LIVE/OFFLINE */}
           <View
             style={{
               flexDirection: "row",
@@ -252,7 +273,6 @@ export function NowPlayingCard({ isPlaying = false, title, subtitle }: Props) {
             {finalSubtitle}
           </Text>
 
-          {/* Progress */}
           <View style={{ marginTop: 12 }}>
             <View
               style={{
@@ -279,7 +299,7 @@ export function NowPlayingCard({ isPlaying = false, title, subtitle }: Props) {
                 color: "rgba(14,22,36,0.55)",
               }}
             >
-              {derived.label}
+              {label}
             </Text>
           </View>
         </View>
