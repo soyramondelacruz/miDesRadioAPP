@@ -536,6 +536,7 @@ export function RadioScreen() {
           <UpcomingProgramsCarousel
             title="Lo que viene"
             programs={upcoming}
+            currentProgram={current}
             onOpenProgramMenu={(p) => {
               setSelectedProgram(p);
               setProgramSheetOpen(true);

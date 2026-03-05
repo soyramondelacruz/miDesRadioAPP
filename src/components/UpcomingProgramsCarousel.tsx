@@ -1,114 +1,39 @@
 // src/components/UpcomingProgramsCarousel.tsx
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo } from "react";
 import { View, Text, ScrollView, Pressable, Image } from "react-native";
 import { Feather } from "@expo/vector-icons";
 
-import { spacing } from "../theme";
-import { weeklySchedule, STATION_TIMEZONE, Program } from "../data/schedule";
+import { Program } from "../data/schedule";
 import { getProgramVisuals } from "../data/programVisuals";
-import { useRadioPlayer } from "../context/RadioPlayerContext";
-
-function timeToMinutes(time: string) {
-  const [h, m] = time.split(":").map(Number);
-  return h * 60 + m;
-}
-
-function isNowInProgram(nowMin: number, start: number, end: number) {
-  if (end > start) return nowMin >= start && nowMin < end;
-  return nowMin >= start || nowMin < end; // cruza medianoche
-}
-
-function getStationNow(baseDate: Date) {
-  const formatter = new Intl.DateTimeFormat("en-US", {
-    timeZone: STATION_TIMEZONE,
-    hour12: false,
-    hour: "2-digit",
-    minute: "2-digit",
-    weekday: "short",
-  });
-
-  const parts = formatter.formatToParts(baseDate);
-  const hour = Number(parts.find((p) => p.type === "hour")?.value ?? 0);
-  const minute = Number(parts.find((p) => p.type === "minute")?.value ?? 0);
-  const weekdayStr = parts.find((p) => p.type === "weekday")?.value ?? "Mon";
-
-  const weekdayMap: Record<string, number> = {
-    Sun: 0,
-    Mon: 1,
-    Tue: 2,
-    Wed: 3,
-    Thu: 4,
-    Fri: 5,
-    Sat: 6,
-  };
-
-  return { day: weekdayMap[weekdayStr], minutes: hour * 60 + minute };
-}
-
-function getCurrentAndUpcoming(day: number, minutes: number) {
-  const today = weeklySchedule[day] ?? [];
-  const nextDay = weeklySchedule[(day + 1) % 7] ?? [];
-
-  // current
-  let current: Program | null = null;
-  for (const p of today) {
-    const s = timeToMinutes(p.start);
-    const e = timeToMinutes(p.end);
-    if (isNowInProgram(minutes, s, e)) {
-      current = p;
-      break;
-    }
-  }
-
-  // upcoming de hoy (por start >= now)
-  const upcomingToday: Program[] = [];
-  for (const p of today) {
-    const s = timeToMinutes(p.start);
-    if (minutes <= s) upcomingToday.push(p);
-  }
-
-  // evita duplicar el mismo bloque horario del current (NO por id)
-  const cleanedToday = upcomingToday.filter(
-    (p) => !(p.start === current?.start && p.end === current?.end && p.title === current?.title)
-  );
-
-  // si no alcanzamos 6, completamos con el inicio del día siguiente
-  const need = 6 - cleanedToday.length;
-  const takeFromNext = need > 0 ? nextDay.slice(0, need) : [];
-
-  return { current, upcoming: [...cleanedToday, ...takeFromNext].slice(0, 6) };
-}
 
 type Props = {
   title?: string;
-  onOpenProgramMenu?: (program: Program) => void; // conecta tu SlidingSheet
+  programs: Program[];            // 👈 upcoming (ya filtrados en RadioScreen)
+  currentProgram?: Program | null; // 👈 para resaltar si aparece o para mostrar "AHORA"
+  onOpenProgramMenu?: (program: Program) => void;
 };
+
+function metaLabel(p: Program) {
+  const time = `${p.start} – ${p.end}`;
+  return p.host ? `${time} • ${p.host}` : time;
+}
 
 export function UpcomingProgramsCarousel({
   title = "Lo que viene",
+  programs,
+  currentProgram = null,
   onOpenProgramMenu,
 }: Props) {
-  const { simulatedISOTime } = useRadioPlayer();
+  // (Opcional) si quieres incluir el current arriba del carrusel, lo hacemos aquí.
+  // Por ahora: resaltamos si el current aparece en la lista, y si no, solo mostramos upcoming.
+  const list = useMemo(() => programs ?? [], [programs]);
 
-  const [tick, setTick] = useState(0);
-  useEffect(() => {
-    const id = setInterval(() => setTick((t) => t + 1), 60_000);
-    return () => clearInterval(id);
-  }, []);
-
-  const baseDate = useMemo(() => {
-    return simulatedISOTime ? new Date(simulatedISOTime) : new Date();
-  }, [simulatedISOTime, tick]);
-
-  const { day, minutes } = useMemo(() => getStationNow(baseDate), [baseDate]);
-  const { upcoming } = useMemo(() => getCurrentAndUpcoming(day, minutes), [day, minutes]);
-
-  if (!upcoming.length) {
+  if (!list.length) {
     return (
       <View style={{ marginTop: 18 }}>
         <Text style={{ fontSize: 16, fontWeight: "900", color: "#FFFFFF" }}>{title}</Text>
         <Text style={{ marginTop: 8, color: "rgba(255,255,255,0.65)", fontWeight: "700" }}>
-          Aún no hay programación cargada para este día.
+          Aún no hay programación cargada.
         </Text>
       </View>
     );
@@ -130,22 +55,22 @@ export function UpcomingProgramsCarousel({
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ gap: 12, paddingBottom: 6 }}
+        contentContainerStyle={{ gap: 12, paddingBottom: 6, paddingRight: 6 }}
       >
-        {upcoming.map((p) => {
+        {list.map((p) => {
+          const isCurrent = !!currentProgram && p.id === currentProgram.id;
           const { artwork } = getProgramVisuals(p);
-          const meta = p.host ? `${p.start} – ${p.end} • ${p.host}` : `${p.start} – ${p.end}`;
 
           return (
             <View
-              key={p.id}
+              key={`${p.id}-${p.start}-${p.end}`}
               style={{
-                width: 280,
+                width: 290,
                 borderRadius: 18,
                 overflow: "hidden",
-                backgroundColor: "rgba(255,255,255,0.06)",
+                backgroundColor: isCurrent ? "rgba(255,255,255,0.10)" : "rgba(255,255,255,0.06)",
                 borderWidth: 1,
-                borderColor: "rgba(255,255,255,0.10)",
+                borderColor: isCurrent ? "rgba(245,158,80,0.55)" : "rgba(255,255,255,0.10)",
               }}
             >
               <View style={{ flexDirection: "row", alignItems: "center", padding: 14, gap: 12 }}>
@@ -158,7 +83,7 @@ export function UpcomingProgramsCarousel({
                     overflow: "hidden",
                     backgroundColor: "rgba(156,195,255,0.12)",
                     borderWidth: 1,
-                    borderColor: "rgba(156,195,255,0.18)",
+                    borderColor: isCurrent ? "rgba(245,158,80,0.55)" : "rgba(156,195,255,0.18)",
                   }}
                 >
                   <Image source={artwork} style={{ width: "100%", height: "100%" }} resizeMode="cover" />
@@ -166,9 +91,51 @@ export function UpcomingProgramsCarousel({
 
                 {/* Text */}
                 <View style={{ flex: 1, minWidth: 0 }}>
-                  <Text numberOfLines={1} style={{ fontSize: 16, fontWeight: "900", color: "#FFFFFF" }}>
+                  {/* Badge */}
+                  <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                    <View
+                      style={{
+                        paddingHorizontal: 10,
+                        paddingVertical: 4,
+                        borderRadius: 999,
+                        backgroundColor: isCurrent ? "rgba(245,158,80,0.20)" : "rgba(255,255,255,0.08)",
+                        borderWidth: 1,
+                        borderColor: isCurrent ? "rgba(245,158,80,0.40)" : "rgba(255,255,255,0.10)",
+                      }}
+                    >
+                      <Text
+                        style={{
+                          fontSize: 10,
+                          fontWeight: "900",
+                          letterSpacing: 1,
+                          color: isCurrent ? "rgba(255,255,255,0.95)" : "rgba(255,255,255,0.70)",
+                        }}
+                      >
+                        {isCurrent ? "AHORA" : "PRÓXIMO"}
+                      </Text>
+                    </View>
+
+                    {isCurrent ? (
+                      <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                        <View
+                          style={{
+                            width: 6,
+                            height: 6,
+                            borderRadius: 99,
+                            backgroundColor: "#EF4444",
+                          }}
+                        />
+                        <Text style={{ fontSize: 10, fontWeight: "900", color: "rgba(255,255,255,0.85)" }}>
+                          LIVE
+                        </Text>
+                      </View>
+                    ) : null}
+                  </View>
+
+                  <Text numberOfLines={1} style={{ marginTop: 8, fontSize: 16, fontWeight: "900", color: "#FFFFFF" }}>
                     {p.title}
                   </Text>
+
                   <Text
                     numberOfLines={1}
                     style={{
@@ -178,7 +145,7 @@ export function UpcomingProgramsCarousel({
                       color: "rgba(255,255,255,0.72)",
                     }}
                   >
-                    {meta}
+                    {metaLabel(p)}
                   </Text>
                 </View>
 
@@ -193,7 +160,7 @@ export function UpcomingProgramsCarousel({
                     justifyContent: "center",
                     backgroundColor: pressed ? "rgba(255,255,255,0.10)" : "rgba(255,255,255,0.06)",
                     borderWidth: 1,
-                    borderColor: "rgba(255,255,255,0.10)",
+                    borderColor: isCurrent ? "rgba(245,158,80,0.40)" : "rgba(255,255,255,0.10)",
                   })}
                 >
                   <Feather name="more-horizontal" size={18} color="rgba(255,255,255,0.85)" />
