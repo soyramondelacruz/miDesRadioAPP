@@ -22,6 +22,8 @@ import { useRadioPlayer } from "../context/RadioPlayerContext";
 import { weeklySchedule, STATION_TIMEZONE } from "../data/schedule";
 import { NowPlayingCard } from "../components/NowPlayingCard";
 import { UpcomingProgramsCarousel } from "../components/UpcomingProgramsCarousel";
+import { FeaturedProgramsGrid } from "../components/FeaturedProgramsGrid";
+import { VerseMomentCard } from "../components/VerseMomentCard";
 
 const { height: SCREEN_H } = Dimensions.get("window");
 
@@ -542,6 +544,125 @@ export function RadioScreen() {
               setProgramSheetOpen(true);
             }}
           />
+         
+
+          {/* ACCIONES RÁPIDAS */}
+              <View style={{ marginTop: 18 }}>
+                <Text style={{ fontSize: 16, fontWeight: "900", color: "#FFFFFF", marginBottom: 12 }}>
+                  Acciones rápidas
+                </Text>
+
+                <View style={{ flexDirection: "row", gap: 10 }}>
+                  <Pressable
+                    onPress={() => {
+                      // aquí abres tu modal / navegas a Home donde esté oración
+                      console.log("Pedir oración");
+                    }}
+                    style={({ pressed }) => ({
+                      flex: 1,
+                      paddingVertical: 12,
+                      borderRadius: 16,
+                      alignItems: "center",
+                      backgroundColor: pressed ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.08)",
+                      borderWidth: 1,
+                      borderColor: "rgba(255,255,255,0.14)",
+                    })}
+                  >
+                    <Text style={{ color: "#FFFFFF", fontWeight: "900" }}>Pedir oración</Text>
+                  </Pressable>
+
+                  <Pressable
+                    onPress={() => console.log("Compartir")}
+                    style={({ pressed }) => ({
+                      flex: 1,
+                      paddingVertical: 12,
+                      borderRadius: 16,
+                      alignItems: "center",
+                      backgroundColor: pressed ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.08)",
+                      borderWidth: 1,
+                      borderColor: "rgba(255,255,255,0.14)",
+                    })}
+                  >
+                    <Text style={{ color: "#FFFFFF", fontWeight: "900" }}>Compartir</Text>
+                  </Pressable>
+
+                  <Pressable
+                    onPress={() => navigation.navigate("Give")}
+                    style={({ pressed }) => ({
+                      flex: 1,
+                      paddingVertical: 12,
+                      borderRadius: 16,
+                      alignItems: "center",
+                      backgroundColor: pressed ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.08)",
+                      borderWidth: 1,
+                      borderColor: "rgba(255,255,255,0.14)",
+                    })}
+                  >
+                    <Text style={{ color: "#FFFFFF", fontWeight: "900" }}>Apoyar</Text>
+                  </Pressable>
+                </View>
+              </View>
+
+   
+
+              {/* PROGRAMAS DESTACADOS (DINÁMICOS) */}
+              <FeaturedProgramsGrid
+                title="Programas destacados"
+                count={6}
+                mode="6h" // o "day"
+                excludePrograms={[...(current ? [current] : []), ...upcoming]}
+                fallbackFromSchedule={weeklySchedule[stationNow.day] ?? []}
+              />
+
+              {/* MOMENTOS */}
+              <View style={{ marginTop: 18 }}>
+                <Text style={{ fontSize: 16, fontWeight: "900", color: "#FFFFFF", marginBottom: 12 }}>
+                  Momentos
+                </Text>
+
+                <View style={{ flexDirection: "row", gap: 12 }}>
+                  <VerseMomentCard onPress={() => { /* opcional: navegar a Devocional */ }} />
+
+                  {/* Tu card de anuncio (deja el tuyo aquí) */}
+                  <Pressable
+                    onPress={() => {}}
+                    style={({ pressed }) => ({
+                      flex: 1,
+                      borderRadius: 18,
+                      overflow: "hidden",
+                      backgroundColor: "rgba(255,255,255,0.06)",
+                      borderWidth: 1,
+                      borderColor: "rgba(255,255,255,0.10)",
+                      padding: 14,
+                      opacity: pressed ? 0.92 : 1,
+                      transform: [{ scale: pressed ? 0.99 : 1 }],
+                    })}
+                  >
+                    <Text
+                      style={{
+                        fontSize: 10,
+                        fontWeight: "900",
+                        letterSpacing: 1.6,
+                        color: "rgba(255,255,255,0.70)",
+                      }}
+                    >
+                      ANUNCIOS
+                    </Text>
+
+                    <Text style={{ marginTop: 10, fontSize: 14, fontWeight: "900", color: "#FFFFFF" }} numberOfLines={2}>
+                      Culto de Poder
+                    </Text>
+
+                    <Text style={{ marginTop: 6, fontSize: 12, fontWeight: "800", color: "rgba(255,255,255,0.72)" }}>
+                      10:00 PM • Te esperamos
+                    </Text>
+                  </Pressable>
+                </View>
+              </View>
+
+              <Text
+              ></Text>
+                      
 
           <SlidingSheet
             visible={mainSheetOpen}
@@ -554,16 +675,27 @@ export function RadioScreen() {
             ]}
           />
 
-          <SlidingSheet
-            visible={programSheetOpen}
-            title={selectedProgram ? selectedProgram.title : "PROGRAMA"}
-            onClose={() => setProgramSheetOpen(false)}
-            items={[
-              { label: "Agendar", icon: "calendar", onPress: () => console.log("Schedule program", selectedProgram) },
-              { label: "Compartir", icon: "share-2", onPress: () => console.log("Share program", selectedProgram) },
-              { label: "Ver programas anteriores", icon: "clock", onPress: () => console.log("Past episodes", selectedProgram) },
-            ]}
-          />
+          {/* PROGRAM MENU SHEET */}
+            <SlidingSheet
+              visible={programSheetOpen}
+              title={selectedProgram ? selectedProgram.title : "PROGRAMA"}
+              onClose={() => setProgramSheetOpen(false)}
+              items={[
+                { label: "Agendar", icon: "calendar", onPress: () => console.log("Schedule program", selectedProgram) },
+                { label: "Compartir", icon: "share-2", onPress: () => console.log("Share program", selectedProgram) },
+
+                // ✅ Solo mostrar “episodios / anteriores” si NO es música
+                ...(selectedProgram?.kind === "show"
+                  ? [
+                      {
+                        label: "Ver programas anteriores",
+                        icon: "clock",
+                        onPress: () => console.log("Past episodes", selectedProgram),
+                      },
+                    ]
+                  : []),
+              ]}
+            />
         </View>
       </ScrollView>
     </View>

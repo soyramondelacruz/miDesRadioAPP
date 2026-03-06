@@ -12,11 +12,13 @@ import { AppTabs } from "./AppTabs";
 import { MiniPlayer } from "../components/MiniPlayer";
 import { ProgramDetailScreen } from "../screens/ProgramDetailScreen";
 import { PrayerScreen } from "../screens/PrayerScreen";
+import { EpisodesScreen } from "../screens/EpisodesScreen";
 
 export type RootStackParamList = {
   Tabs: undefined;
   ProgramDetail: { programId: string };
   Prayer: undefined;
+  Episodes: { programId: string; title: string };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -72,6 +74,13 @@ export function RootNavigator({ theme }: any) {
             component={PrayerScreen}
             options={{ headerShown: true, title: "Oración" }}
           />
+
+          <Stack.Screen
+            name="Episodes"
+            component={EpisodesScreen}
+            options={{ headerShown: false }}
+          />
+
         </Stack.Navigator>
 
         {/* MINI PLAYER (solo si NO estás en Radio) */}

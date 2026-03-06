@@ -65,7 +65,7 @@ export function PrayerScreen() {
               <TextInput
                 value={name}
                 onChangeText={setName}
-                placeholder="Ej. Ramón"
+                placeholder="Tu nombre"
                 placeholderTextColor="rgba(0,0,0,0.35)"
                 style={{
                   backgroundColor: "rgba(255,255,255,0.98)",
@@ -115,7 +115,10 @@ export function PrayerScreen() {
             </Pressable>
 
             <Text style={{ fontSize: 12, opacity: 0.65, lineHeight: 18 }}>
-              “Clama a mí, y yo te responderé…” — Jeremías 33:3
+              “Mi Dios, pues, suplirá todo lo que os falta conforme a sus riquezas en gloria en Cristo Jesús” 
+            </Text>
+            <Text style={{ fontSize: 12, opacity: 0.65, lineHeight: 18, marginTop: -16, textAlign:"right" }}>
+               — Filipenses 4:19
             </Text>
           </View>
 

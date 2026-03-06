@@ -1,207 +1,320 @@
 // src/screens/ProgramDetailScreen.tsx
 import React, { useMemo } from "react";
-import { View, Text, ScrollView, Image, Pressable } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
+import {
+  View,
+  Text,
+  ScrollView,
+  Pressable,
+  Image,
+} from "react-native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import { Feather } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useRoute } from "@react-navigation/native";
 
 import { spacing } from "../theme";
-import { weeklySchedule, Program } from "../data/schedule";
 import { getProgramVisuals } from "../data/programVisuals";
-import { programCatalogById } from "../data/programCatalog";
+import { resolveProgramById } from "../utils/programs";
 
-function findProgramById(programId: string): Program | null {
-  for (const day of Object.values(weeklySchedule)) {
-    for (const p of day ?? []) if (p.id === programId) return p;
-  }
-  return null;
-}
+type RouteParams = {
+  programId: string;
+};
 
-function getAirtimes(programId: string) {
-  const dayNames = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
-  const rows: Array<{ day: string; start: string; end: string }> = [];
-
-  Object.entries(weeklySchedule).forEach(([dayIndexStr, list]) => {
-    const dayIndex = Number(dayIndexStr);
-    (list ?? []).forEach((p) => {
-      if (p.id === programId) {
-        rows.push({ day: dayNames[dayIndex] ?? "—", start: p.start, end: p.end });
-      }
-    });
-  });
-
-  return rows;
+function getKindLabel(kind?: "music" | "show") {
+  return kind === "music" ? "Música" : "Programa";
 }
 
 export function ProgramDetailScreen() {
-  const insets = useSafeAreaInsets();
+  const navigation = useNavigation<any>();
   const route = useRoute<any>();
-  const programId = route.params?.programId as string;
+  const insets = useSafeAreaInsets();
 
-  const base = useMemo(() => findProgramById(programId), [programId]);
-  const catalog = programCatalogById[programId];
+  const { programId } = (route.params ?? {}) as RouteParams;
 
-  const title = catalog?.title ?? base?.title ?? "Programa";
-  const subtitle = catalog?.subtitle ?? base?.host ?? "miDes Radio";
-  const description =
-    catalog?.description ??
-    "Pronto agregaremos una descripción completa de este programa.";
+  const program = useMemo(() => {
+    if (!programId) return null;
+    return resolveProgramById(programId);
+  }, [programId]);
 
-  const { artwork } = getProgramVisuals({ id: programId } as any);
-  const airtimes = useMemo(() => getAirtimes(programId), [programId]);
+  const visual = useMemo(() => {
+    return getProgramVisuals(program as any);
+  }, [program]);
 
-  const HEADER_TOP = Math.max(insets.top, 14);
+  const canShowEpisodes = program?.kind === "show";
+
+  if (!program) {
+    return (
+      <View style={{ flex: 1, backgroundColor: "#0E1624", paddingTop: insets.top }}>
+        <View style={{ paddingHorizontal: spacing.lg, paddingTop: 12 }}>
+          <Pressable
+            onPress={() => navigation.goBack()}
+            style={({ pressed }) => ({
+              width: 40,
+              height: 40,
+              borderRadius: 14,
+              alignItems: "center",
+              justifyContent: "center",
+              backgroundColor: pressed ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.08)",
+              borderWidth: 1,
+              borderColor: "rgba(255,255,255,0.12)",
+            })}
+          >
+            <Feather name="arrow-left" size={18} color="#FFFFFF" />
+          </Pressable>
+        </View>
+
+        <View style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: spacing.xl }}>
+          <Text style={{ color: "#FFFFFF", fontSize: 20, fontWeight: "900", textAlign: "center" }}>
+            Programa no encontrado
+          </Text>
+          <Text
+            style={{
+              marginTop: 8,
+              color: "rgba(255,255,255,0.72)",
+              fontSize: 14,
+              textAlign: "center",
+              lineHeight: 20,
+            }}
+          >
+            No pudimos encontrar la información de este programa.
+          </Text>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View style={{ flex: 1, backgroundColor: "#0E1624" }}>
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 26 }}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
+        {/* Header premium */}
         <LinearGradient
           colors={["#0B1220", "#1E4F93", "#1F5FAE", "#163A6B", "#0E1624"]}
           start={{ x: 0.5, y: 0 }}
-          end={{ x: 0.5, y: 1.25 }}
+          end={{ x: 0.5, y: 1.2 }}
           style={{
-            paddingTop: HEADER_TOP - 10,
+            paddingTop: insets.top + 8,
             paddingHorizontal: spacing.lg,
-            paddingBottom: 16,
+            paddingBottom: 28,
             overflow: "hidden",
           }}
         >
-          <Text style={{ color: "rgba(255,255,255,0.75)", fontSize: 12, fontWeight: "900", letterSpacing: 1 }}>
-            PROGRAMA
-          </Text>
+          <View
+            pointerEvents="none"
+            style={{
+              position: "absolute",
+              right: -16,
+              top: -18,
+              width: 190,
+              height: 190,
+              borderRadius: 999,
+              backgroundColor: "rgba(255,255,255,0.07)",
+              transform: [{ rotate: "18deg" }],
+            }}
+          />
+          <View
+            pointerEvents="none"
+            style={{
+              position: "absolute",
+              right: 30,
+              top: 30,
+              width: 110,
+              height: 110,
+              borderRadius: 999,
+              backgroundColor: "rgba(255,255,255,0.05)",
+            }}
+          />
 
-          <Text style={{ color: "#fff", fontSize: 24, fontWeight: "900", marginTop: 8 }} numberOfLines={2}>
-            {title}
-          </Text>
+          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+            <Pressable
+              onPress={() => navigation.goBack()}
+              style={({ pressed }) => ({
+                width: 42,
+                height: 42,
+                borderRadius: 14,
+                alignItems: "center",
+                justifyContent: "center",
+                backgroundColor: pressed ? "rgba(255,255,255,0.14)" : "rgba(255,255,255,0.10)",
+                borderWidth: 1,
+                borderColor: "rgba(255,255,255,0.14)",
+              })}
+            >
+              <Feather name="arrow-left" size={18} color="#FFFFFF" />
+            </Pressable>
 
-          <Text style={{ color: "rgba(255,255,255,0.75)", fontSize: 12, fontWeight: "800", marginTop: 6 }} numberOfLines={1}>
-            {subtitle}
-          </Text>
+            <Text style={{ color: "#FFFFFF", fontWeight: "900", fontSize: 16 }}>
+              Detalle del programa
+            </Text>
+
+            <View style={{ width: 42 }} />
+          </View>
         </LinearGradient>
 
-        <View style={{ paddingHorizontal: spacing.lg, paddingTop: 16, gap: 12 }}>
-          {/* Artwork */}
+        <View style={{ paddingHorizontal: spacing.lg, marginTop: -10 }}>
+          {/* Hero card */}
           <View
             style={{
-              borderRadius: 20,
+              borderRadius: 22,
               overflow: "hidden",
               backgroundColor: "rgba(255,255,255,0.06)",
               borderWidth: 1,
               borderColor: "rgba(255,255,255,0.10)",
             }}
           >
-            <Image source={artwork} style={{ width: "100%", height: 220 }} resizeMode="cover" />
+            <View style={{ height: 220, backgroundColor: "rgba(255,255,255,0.05)" }}>
+              <Image
+                source={visual.artwork}
+                style={{ width: "100%", height: "100%" }}
+                resizeMode="cover"
+              />
+            </View>
+
+            <View style={{ padding: spacing.lg }}>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                <View
+                  style={{
+                    paddingHorizontal: 10,
+                    paddingVertical: 6,
+                    borderRadius: 999,
+                    backgroundColor: "rgba(255,255,255,0.08)",
+                    borderWidth: 1,
+                    borderColor: "rgba(255,255,255,0.12)",
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: "rgba(255,255,255,0.85)",
+                      fontSize: 11,
+                      fontWeight: "900",
+                      letterSpacing: 1,
+                    }}
+                  >
+                    {getKindLabel(program.kind)}
+                  </Text>
+                </View>
+
+                <View
+                  style={{
+                    paddingHorizontal: 10,
+                    paddingVertical: 6,
+                    borderRadius: 999,
+                    backgroundColor: "rgba(156,195,255,0.10)",
+                    borderWidth: 1,
+                    borderColor: "rgba(156,195,255,0.18)",
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: "#9CC3FF",
+                      fontSize: 11,
+                      fontWeight: "900",
+                    }}
+                  >
+                    {program.start} – {program.end}
+                  </Text>
+                </View>
+              </View>
+
+              <Text
+                style={{
+                  marginTop: 14,
+                  color: "#FFFFFF",
+                  fontSize: 24,
+                  fontWeight: "900",
+                  letterSpacing: -0.4,
+                }}
+              >
+                {program.title}
+              </Text>
+
+              <Text
+                style={{
+                  marginTop: 6,
+                  color: "rgba(255,255,255,0.75)",
+                  fontSize: 14,
+                  fontWeight: "700",
+                }}
+              >
+                {program.host ?? "miDes Radio"}
+              </Text>
+
+              <Text
+                style={{
+                  marginTop: 16,
+                  color: "rgba(255,255,255,0.82)",
+                  fontSize: 14,
+                  lineHeight: 22,
+                }}
+              >
+                {program.description}
+              </Text>
+            </View>
           </View>
 
           {/* Actions */}
-          <View style={{ flexDirection: "row", gap: 10 }}>
-            <Pressable
-              onPress={() => {}}
-              style={({ pressed }) => ({
-                flex: 1,
-                borderRadius: 14,
-                paddingVertical: 12,
-                alignItems: "center",
-                justifyContent: "center",
-                backgroundColor: pressed ? "rgba(255,255,255,0.10)" : "rgba(255,255,255,0.06)",
-                borderWidth: 1,
-                borderColor: "rgba(255,255,255,0.10)",
-                flexDirection: "row",
-                gap: 8,
-              })}
+          <View style={{ marginTop: 18, gap: 12 }}>
+            <Text
+              style={{
+                color: "#FFFFFF",
+                fontSize: 16,
+                fontWeight: "900",
+              }}
             >
-              <Feather name="heart" size={16} color="#fff" />
-              <Text style={{ color: "#fff", fontWeight: "900" }}>Me gusta</Text>
-            </Pressable>
-
-            <Pressable
-              onPress={() => {}}
-              style={({ pressed }) => ({
-                flex: 1,
-                borderRadius: 14,
-                paddingVertical: 12,
-                alignItems: "center",
-                justifyContent: "center",
-                backgroundColor: pressed ? "rgba(255,255,255,0.10)" : "rgba(255,255,255,0.06)",
-                borderWidth: 1,
-                borderColor: "rgba(255,255,255,0.10)",
-                flexDirection: "row",
-                gap: 8,
-              })}
-            >
-              <Feather name="share-2" size={16} color="#fff" />
-              <Text style={{ color: "#fff", fontWeight: "900" }}>Compartir</Text>
-            </Pressable>
-          </View>
-
-          <Pressable
-            onPress={() => {}}
-            style={({ pressed }) => ({
-              borderRadius: 14,
-              paddingVertical: 12,
-              alignItems: "center",
-              justifyContent: "center",
-              backgroundColor: pressed ? "rgba(255,255,255,0.10)" : "rgba(255,255,255,0.06)",
-              borderWidth: 1,
-              borderColor: "rgba(255,255,255,0.10)",
-              flexDirection: "row",
-              gap: 8,
-            })}
-          >
-            <Feather name="bell" size={16} color="#fff" />
-            <Text style={{ color: "#fff", fontWeight: "900" }}>Recordarme cuando empiece</Text>
-          </Pressable>
-
-          {/* Description */}
-          <View
-            style={{
-              borderRadius: 18,
-              padding: 14,
-              backgroundColor: "rgba(255,255,255,0.06)",
-              borderWidth: 1,
-              borderColor: "rgba(255,255,255,0.10)",
-            }}
-          >
-            <Text style={{ color: "rgba(255,255,255,0.80)", fontWeight: "900", letterSpacing: 0.6, marginBottom: 8 }}>
-              Sobre este programa
-            </Text>
-            <Text style={{ color: "rgba(255,255,255,0.75)", fontWeight: "600", lineHeight: 18 }}>
-              {description}
-            </Text>
-          </View>
-
-          {/* Airtimes */}
-          <View
-            style={{
-              borderRadius: 18,
-              padding: 14,
-              backgroundColor: "rgba(255,255,255,0.06)",
-              borderWidth: 1,
-              borderColor: "rgba(255,255,255,0.10)",
-            }}
-          >
-            <Text style={{ color: "rgba(255,255,255,0.80)", fontWeight: "900", letterSpacing: 0.6, marginBottom: 10 }}>
-              Horario
+              Acciones
             </Text>
 
-            {airtimes.length ? (
-              airtimes.map((r, idx) => (
-                <View key={idx} style={{ flexDirection: "row", justifyContent: "space-between", paddingVertical: 8 }}>
-                  <Text style={{ color: "#fff", fontWeight: "900" }}>{r.day}</Text>
-                  <Text style={{ color: "rgba(255,255,255,0.75)", fontWeight: "800" }}>
-                    {r.start} – {r.end}
-                  </Text>
-                </View>
-              ))
-            ) : (
-              <Text style={{ color: "rgba(255,255,255,0.65)", fontWeight: "700" }}>
-                No hay horarios asociados todavía.
-              </Text>
+            <View style={{ flexDirection: "row", gap: 10 }}>
+              <Pressable
+                onPress={() => console.log("Compartir programa", program)}
+                style={({ pressed }) => ({
+                  flex: 1,
+                  paddingVertical: 14,
+                  borderRadius: 16,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  backgroundColor: pressed ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.08)",
+                  borderWidth: 1,
+                  borderColor: "rgba(255,255,255,0.12)",
+                })}
+              >
+                <Text style={{ color: "#FFFFFF", fontWeight: "900" }}>Compartir</Text>
+              </Pressable>
+
+              <Pressable
+                onPress={() => console.log("Agendar programa", program)}
+                style={({ pressed }) => ({
+                  flex: 1,
+                  paddingVertical: 14,
+                  borderRadius: 16,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  backgroundColor: pressed ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.08)",
+                  borderWidth: 1,
+                  borderColor: "rgba(255,255,255,0.12)",
+                })}
+              >
+                <Text style={{ color: "#FFFFFF", fontWeight: "900" }}>Agendar</Text>
+              </Pressable>
+            </View>
+
+            {canShowEpisodes && (
+              <Pressable
+                onPress={() => console.log("Ver episodios", program)}
+                style={({ pressed }) => ({
+                  paddingVertical: 14,
+                  borderRadius: 16,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  backgroundColor: pressed ? "rgba(156,195,255,0.14)" : "rgba(156,195,255,0.10)",
+                  borderWidth: 1,
+                  borderColor: "rgba(156,195,255,0.18)",
+                })}
+              >
+                <Text style={{ color: "#9CC3FF", fontWeight: "900" }}>
+                  Ver episodios
+                </Text>
+              </Pressable>
             )}
           </View>
-
-          <View style={{ height: 18 }} />
         </View>
       </ScrollView>
     </View>
