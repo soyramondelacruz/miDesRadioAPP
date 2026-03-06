@@ -2,84 +2,1504 @@
   "timezone": "America/Santo_Domingo",
   "week": [
     {
-      "day": "Monday",
+      "day": "Sunday",
       "items": [
-        { "id": "mon-00", "title": "Música Instrumental", "type": "music", "startTime": "00:00", "endTime": "01:00", "description": "Instrumental nocturna.", "tags": ["instrumental"] },
-        { "id": "mon-01", "title": "Música Instrumental", "type": "music", "startTime": "01:00", "endTime": "02:00", "description": "Instrumental nocturna.", "tags": ["instrumental"] },
-        { "id": "mon-02", "title": "Reflexión Nocturna", "type": "program", "startTime": "02:00", "endTime": "03:00", "description": "Reflexiones profundas.", "tags": ["reflexion"] },
-        { "id": "mon-03", "title": "Reflexión Nocturna", "type": "program", "startTime": "03:00", "endTime": "04:00", "description": "Reflexiones profundas.", "tags": ["reflexion"] },
-        { "id": "mon-04", "title": "Alabanza Matutina", "type": "music", "startTime": "04:00", "endTime": "05:00", "description": "Adoración para iniciar el día.", "tags": ["alabanza"] },
-        { "id": "mon-05", "title": "Alabanza Matutina", "type": "music", "startTime": "05:00", "endTime": "06:00", "description": "Adoración para iniciar el día.", "tags": ["alabanza"] },
-        { "id": "mon-06", "title": "Devocional Diario", "type": "live", "startTime": "06:00", "endTime": "07:00", "description": "Devocional en vivo.", "tags": ["devocional"] },
-        { "id": "mon-07", "title": "Mañanas de Fe", "type": "live", "startTime": "07:00", "endTime": "08:00", "description": "Programa en vivo.", "tags": ["enseñanza"] },
-        { "id": "mon-08", "title": "Mañanas de Fe", "type": "live", "startTime": "08:00", "endTime": "09:00", "description": "Continuación.", "tags": ["enseñanza"] },
-        { "id": "mon-09", "title": "Música Inspiradora", "type": "music", "startTime": "09:00", "endTime": "10:00", "description": "Cristiana contemporánea.", "tags": ["musica"] },
-        { "id": "mon-10", "title": "Música Inspiradora", "type": "music", "startTime": "10:00", "endTime": "11:00", "description": "Cristiana contemporánea.", "tags": ["musica"] },
-        { "id": "mon-11", "title": "Tiempo de Oración", "type": "live", "startTime": "11:00", "endTime": "12:00", "description": "Oración en vivo.", "tags": ["oracion"] },
-        { "id": "mon-12", "title": "Reflexión del Mediodía", "type": "program", "startTime": "12:00", "endTime": "13:00", "description": "Mensaje breve.", "tags": ["reflexion"] },
-        { "id": "mon-13", "title": "Música de Esperanza", "type": "music", "startTime": "13:00", "endTime": "14:00", "description": "Selección musical.", "tags": ["musica"] },
-        { "id": "mon-14", "title": "Podcast Vida y Fe", "type": "program", "startTime": "14:00", "endTime": "15:00", "description": "Podcast grabado.", "tags": ["podcast"] },
-        { "id": "mon-15", "title": "Podcast Vida y Fe", "type": "program", "startTime": "15:00", "endTime": "16:00", "description": "Continuación.", "tags": ["podcast"] },
-        { "id": "mon-16", "title": "Alabanza Vespertina", "type": "music", "startTime": "16:00", "endTime": "17:00", "description": "Música para la tarde.", "tags": ["alabanza"] },
-        { "id": "mon-17", "title": "Reflexión Familiar", "type": "program", "startTime": "17:00", "endTime": "18:00", "description": "Mensaje para la familia.", "tags": ["familia"] },
-        { "id": "mon-18", "title": "Oración y Clamor", "type": "live", "startTime": "18:00", "endTime": "19:00", "description": "Intercesión en vivo.", "tags": ["oracion"] },
-        { "id": "mon-19", "title": "Música Nocturna", "type": "music", "startTime": "19:00", "endTime": "20:00", "description": "Adoración suave.", "tags": ["musica"] },
-        { "id": "mon-20", "title": "Estudio Bíblico", "type": "program", "startTime": "20:00", "endTime": "21:00", "description": "Enseñanza bíblica.", "tags": ["biblia"] },
-        { "id": "mon-21", "title": "Estudio Bíblico", "type": "program", "startTime": "21:00", "endTime": "22:00", "description": "Continuación.", "tags": ["biblia"] },
-        { "id": "mon-22", "title": "Música Instrumental", "type": "music", "startTime": "22:00", "endTime": "23:00", "description": "Instrumental nocturna.", "tags": ["instrumental"] },
-        { "id": "mon-23", "title": "Música Instrumental", "type": "music", "startTime": "23:00", "endTime": "00:00", "description": "Cierre del día.", "tags": ["instrumental"] }
+        {
+          "id": "sun-0500-prayer",
+          "title": "Oración al Alba",
+          "type": "program",
+          "startTime": "05:00",
+          "endTime": "06:00",
+          "host": "Equipo miDes",
+          "description": "Tiempo de oración para comenzar el domingo en la presencia de Dios.",
+          "tags": ["oración", "domingo"]
+        },
+        {
+          "id": "sun-0600-instrumental",
+          "title": "Instrumental de Adoración",
+          "type": "music",
+          "startTime": "06:00",
+          "endTime": "07:00",
+          "description": "Música instrumental suave para preparar el corazón.",
+          "tags": ["adoración", "instrumental"]
+        },
+        {
+          "id": "sun-0700-bible",
+          "title": "Lectura Bíblica Guiada",
+          "type": "program",
+          "startTime": "07:00",
+          "endTime": "07:30",
+          "host": "Equipo miDes",
+          "description": "Lectura bíblica para empezar el día en la Palabra.",
+          "tags": ["biblia", "lectura"]
+        },
+        {
+          "id": "sun-0730-devocional",
+          "title": "Devocional Dominical",
+          "type": "program",
+          "startTime": "07:30",
+          "endTime": "08:00",
+          "host": "Ps. Ramón De la Cruz",
+          "description": "Palabra breve para enfocar el corazón en el Señor.",
+          "tags": ["devocional", "domingo"]
+        },
+        {
+          "id": "sun-0800-music-adoracion",
+          "title": "Música de Adoración",
+          "type": "music",
+          "startTime": "08:00",
+          "endTime": "09:00",
+          "description": "Selección musical de adoración.",
+          "tags": ["adoración", "música"]
+        },
+        {
+          "id": "sun-0900-camino-culto",
+          "title": "Camino al Culto",
+          "type": "program",
+          "startTime": "09:00",
+          "endTime": "10:00",
+          "host": "Equipo miDes",
+          "description": "Espacio de bienvenida, reflexión y ambiente de iglesia.",
+          "tags": ["culto", "comunidad"]
+        },
+        {
+          "id": "sun-1000-culto-casa",
+          "title": "Culto en Casa",
+          "type": "program",
+          "startTime": "10:00",
+          "endTime": "11:30",
+          "host": "miDes en vivo",
+          "description": "Predicación, adoración y oración dominical.",
+          "tags": ["culto", "predicación"]
+        },
+        {
+          "id": "sun-1130-music-adoracion",
+          "title": "Música de Adoración",
+          "type": "music",
+          "startTime": "11:30",
+          "endTime": "12:00",
+          "description": "Adoración suave después del culto.",
+          "tags": ["adoración", "música"]
+        },
+        {
+          "id": "sun-1200-familia",
+          "title": "Mensaje para la Familia",
+          "type": "program",
+          "startTime": "12:00",
+          "endTime": "13:00",
+          "host": "Ps. Ramón De la Cruz",
+          "description": "Reflexión para fortalecer el hogar y la familia.",
+          "tags": ["familia", "mensaje"]
+        },
+        {
+          "id": "sun-1300-postrecito",
+          "title": "Postrecito de Vida",
+          "type": "program",
+          "startTime": "13:00",
+          "endTime": "13:30",
+          "host": "Ps. Ramón De la Cruz",
+          "description": "Reflexión corta y práctica.",
+          "tags": ["devocional", "reflexión"]
+        },
+        {
+          "id": "sun-1330-music",
+          "title": "Música",
+          "type": "music",
+          "startTime": "13:30",
+          "endTime": "14:00",
+          "description": "Selección musical ligera.",
+          "tags": ["música"]
+        },
+        {
+          "id": "sun-1400-music-adoracion",
+          "title": "Música de Adoración",
+          "type": "music",
+          "startTime": "14:00",
+          "endTime": "15:00",
+          "description": "Música para una tarde tranquila en familia.",
+          "tags": ["adoración", "música"]
+        },
+        {
+          "id": "sun-1500-ofrenda",
+          "title": "La Ofrenda de la Tarde",
+          "type": "program",
+          "startTime": "15:00",
+          "endTime": "16:00",
+          "host": "Equipo miDes",
+          "description": "Espacio de reflexión y gratitud.",
+          "tags": ["reflexión", "gratitud"]
+        },
+        {
+          "id": "sun-1600-testimonios",
+          "title": "Testimonios de Fe",
+          "type": "program",
+          "startTime": "16:00",
+          "endTime": "17:00",
+          "host": "Equipo miDes",
+          "description": "Historias de esperanza y transformación.",
+          "tags": ["testimonios", "fe"]
+        },
+        {
+          "id": "sun-1700-music",
+          "title": "Música",
+          "type": "music",
+          "startTime": "17:00",
+          "endTime": "18:00",
+          "description": "Música edificante para cerrar la tarde.",
+          "tags": ["música"]
+        },
+        {
+          "id": "sun-1800-reflexion",
+          "title": "Reflexión Dominical",
+          "type": "program",
+          "startTime": "18:00",
+          "endTime": "19:00",
+          "host": "Ps. Ramón De la Cruz",
+          "description": "Palabra de cierre para el domingo.",
+          "tags": ["reflexión", "domingo"]
+        },
+        {
+          "id": "sun-1900-music-adoracion",
+          "title": "Música de Adoración",
+          "type": "music",
+          "startTime": "19:00",
+          "endTime": "20:00",
+          "description": "Ambiente de adoración para la noche.",
+          "tags": ["adoración", "música"]
+        },
+        {
+          "id": "sun-2000-esperanza",
+          "title": "Noche de Esperanza",
+          "type": "program",
+          "startTime": "20:00",
+          "endTime": "21:00",
+          "host": "Equipo miDes",
+          "description": "Mensajes y compañía para terminar el día con fe.",
+          "tags": ["esperanza", "noche"]
+        },
+        {
+          "id": "sun-2100-vigilia",
+          "title": "Segunda Vigilia",
+          "type": "program",
+          "startTime": "21:00",
+          "endTime": "22:00",
+          "host": "Equipo miDes",
+          "description": "Tiempo de oración y búsqueda de Dios.",
+          "tags": ["oración", "vigilia"]
+        },
+        {
+          "id": "sun-2200-instrumental",
+          "title": "Instrumental",
+          "type": "music",
+          "startTime": "22:00",
+          "endTime": "23:00",
+          "description": "Música instrumental para cerrar el día.",
+          "tags": ["instrumental", "música"]
+        },
+        {
+          "id": "sun-2300-mensaje",
+          "title": "Hora del Mensaje",
+          "type": "program",
+          "startTime": "23:00",
+          "endTime": "00:00",
+          "host": "Retransmitido",
+          "description": "Retransmisión de mensaje edificante.",
+          "tags": ["mensaje", "retransmisión"]
+        },
+        {
+          "id": "sun-0000-music",
+          "title": "Música",
+          "type": "music",
+          "startTime": "00:00",
+          "endTime": "05:00",
+          "description": "Música nocturna continua.",
+          "tags": ["música", "noche"]
+        }
       ]
     },
-
+    {
+      "day": "Monday",
+      "items": [
+        {
+          "id": "mon-0500-prayer",
+          "title": "Oración al Alba",
+          "type": "program",
+          "startTime": "05:00",
+          "endTime": "06:00",
+          "host": "Equipo miDes",
+          "description": "Tiempo de oración al iniciar el día.",
+          "tags": ["oración", "mañana"]
+        },
+        {
+          "id": "mon-0600-instrumental",
+          "title": "Música Instrumental",
+          "type": "music",
+          "startTime": "06:00",
+          "endTime": "07:00",
+          "description": "Música instrumental suave.",
+          "tags": ["instrumental", "música"]
+        },
+        {
+          "id": "mon-0700-bible",
+          "title": "Lectura Biblia Guiada",
+          "type": "program",
+          "startTime": "07:00",
+          "endTime": "07:30",
+          "host": "Equipo miDes",
+          "description": "Lectura guiada de la Palabra.",
+          "tags": ["biblia", "lectura"]
+        },
+        {
+          "id": "mon-0730-devocional",
+          "title": "Devocional",
+          "type": "program",
+          "startTime": "07:30",
+          "endTime": "08:00",
+          "host": "Ps. Ramón De la Cruz",
+          "description": "Reflexión breve para comenzar el día.",
+          "tags": ["devocional"]
+        },
+        {
+          "id": "mon-0800-adoracion",
+          "title": "Música de Adoración",
+          "type": "music",
+          "startTime": "08:00",
+          "endTime": "09:00",
+          "description": "Selección de adoración.",
+          "tags": ["adoración", "música"]
+        },
+        {
+          "id": "mon-0900-psicologia-fe",
+          "title": "Psicología y Fe",
+          "type": "program",
+          "startTime": "09:00",
+          "endTime": "10:00",
+          "host": "Ps. Ramón De la Cruz",
+          "description": "Espacio de reflexión emocional y espiritual.",
+          "tags": ["psicología", "fe"]
+        },
+        {
+          "id": "mon-1000-music",
+          "title": "Música",
+          "type": "music",
+          "startTime": "10:00",
+          "endTime": "11:00",
+          "description": "Música edificante.",
+          "tags": ["música"]
+        },
+        {
+          "id": "mon-1100-music",
+          "title": "Música",
+          "type": "music",
+          "startTime": "11:00",
+          "endTime": "12:00",
+          "description": "Música edificante.",
+          "tags": ["música"]
+        },
+        {
+          "id": "mon-1200-new-program",
+          "title": "New Program",
+          "type": "program",
+          "startTime": "12:00",
+          "endTime": "13:00",
+          "host": "Pending host",
+          "description": "Espacio reservado para programa nuevo.",
+          "tags": ["nuevo"]
+        },
+        {
+          "id": "mon-1300-postrecito",
+          "title": "Postrecito de Vida",
+          "type": "program",
+          "startTime": "13:00",
+          "endTime": "13:30",
+          "host": "Ps. Ramón De la Cruz",
+          "description": "Reflexión corta y práctica.",
+          "tags": ["reflexión", "devocional"]
+        },
+        {
+          "id": "mon-1330-music",
+          "title": "Música",
+          "type": "music",
+          "startTime": "13:30",
+          "endTime": "14:00",
+          "description": "Música edificante.",
+          "tags": ["música"]
+        },
+        {
+          "id": "mon-1400-adoracion",
+          "title": "Música de Adoración",
+          "type": "music",
+          "startTime": "14:00",
+          "endTime": "15:00",
+          "description": "Selección de adoración.",
+          "tags": ["adoración", "música"]
+        },
+        {
+          "id": "mon-1500-ofrenda",
+          "title": "La Ofrenda de la Tarde",
+          "type": "program",
+          "startTime": "15:00",
+          "endTime": "16:00",
+          "host": "Equipo miDes",
+          "description": "Espacio de reflexión y gratitud.",
+          "tags": ["gratitud", "reflexión"]
+        },
+        {
+          "id": "mon-1600-music",
+          "title": "Música",
+          "type": "music",
+          "startTime": "16:00",
+          "endTime": "17:00",
+          "description": "Música edificante.",
+          "tags": ["música"]
+        },
+        {
+          "id": "mon-1700-music",
+          "title": "Música",
+          "type": "music",
+          "startTime": "17:00",
+          "endTime": "18:00",
+          "description": "Música edificante.",
+          "tags": ["música"]
+        },
+        {
+          "id": "mon-1800-new-program",
+          "title": "New Program",
+          "type": "program",
+          "startTime": "18:00",
+          "endTime": "19:00",
+          "host": "Pending host",
+          "description": "Espacio reservado para programa nuevo.",
+          "tags": ["nuevo"]
+        },
+        {
+          "id": "mon-1900-music",
+          "title": "Música",
+          "type": "music",
+          "startTime": "19:00",
+          "endTime": "20:00",
+          "description": "Música edificante.",
+          "tags": ["música"]
+        },
+        {
+          "id": "mon-2000-adoracion",
+          "title": "Música de Adoración",
+          "type": "music",
+          "startTime": "20:00",
+          "endTime": "21:00",
+          "description": "Selección de adoración.",
+          "tags": ["adoración", "música"]
+        },
+        {
+          "id": "mon-2100-vigilia",
+          "title": "Segunda Vigilia",
+          "type": "program",
+          "startTime": "21:00",
+          "endTime": "22:00",
+          "host": "Equipo miDes",
+          "description": "Tiempo de oración y búsqueda.",
+          "tags": ["oración", "vigilia"]
+        },
+        {
+          "id": "mon-2200-conexion",
+          "title": "Conexión con el Alma",
+          "type": "program",
+          "startTime": "22:00",
+          "endTime": "23:00",
+          "host": "Ps. Ramón De la Cruz",
+          "description": "Reflexión nocturna y acompañamiento espiritual.",
+          "tags": ["alma", "reflexión"]
+        },
+        {
+          "id": "mon-2300-mensaje",
+          "title": "La Hora del Mensaje",
+          "type": "program",
+          "startTime": "23:00",
+          "endTime": "00:00",
+          "host": "Retransmitido",
+          "description": "Retransmisión de mensaje edificante.",
+          "tags": ["mensaje", "retransmisión"]
+        },
+        {
+          "id": "mon-0000-music",
+          "title": "Música",
+          "type": "music",
+          "startTime": "00:00",
+          "endTime": "05:00",
+          "description": "Música nocturna continua.",
+          "tags": ["música", "noche"]
+        }
+      ]
+    },
     {
       "day": "Tuesday",
       "items": [
-        { "id": "tue-00", "title": "Música Instrumental", "type": "music", "startTime": "00:00", "endTime": "01:00", "description": "Instrumental nocturna.", "tags": ["instrumental"] },
-        { "id": "tue-01", "title": "Reflexión Nocturna", "type": "program", "startTime": "01:00", "endTime": "02:00", "description": "Reflexiones profundas.", "tags": ["reflexion"] },
-        { "id": "tue-02", "title": "Reflexión Nocturna", "type": "program", "startTime": "02:00", "endTime": "03:00", "description": "Reflexiones profundas.", "tags": ["reflexion"] },
-        { "id": "tue-03", "title": "Alabanza Matutina", "type": "music", "startTime": "03:00", "endTime": "04:00", "description": "Adoración para iniciar el día.", "tags": ["alabanza"] },
-        { "id": "tue-04", "title": "Alabanza Matutina", "type": "music", "startTime": "04:00", "endTime": "05:00", "description": "Adoración para iniciar el día.", "tags": ["alabanza"] },
-        { "id": "tue-05", "title": "Devocional Diario", "type": "live", "startTime": "05:00", "endTime": "06:00", "description": "Devocional en vivo.", "tags": ["devocional"] },
-        { "id": "tue-06", "title": "Mañanas de Fe", "type": "live", "startTime": "06:00", "endTime": "07:00", "description": "Programa en vivo.", "tags": ["enseñanza"] },
-        { "id": "tue-07", "title": "Música Inspiradora", "type": "music", "startTime": "07:00", "endTime": "08:00", "description": "Cristiana contemporánea.", "tags": ["musica"] },
-        { "id": "tue-08", "title": "Música Inspiradora", "type": "music", "startTime": "08:00", "endTime": "09:00", "description": "Cristiana contemporánea.", "tags": ["musica"] },
-        { "id": "tue-09", "title": "Tiempo de Oración", "type": "live", "startTime": "09:00", "endTime": "10:00", "description": "Oración en vivo.", "tags": ["oracion"] },
-        { "id": "tue-10", "title": "Podcast Vida y Fe", "type": "program", "startTime": "10:00", "endTime": "11:00", "description": "Podcast grabado.", "tags": ["podcast"] },
-        { "id": "tue-11", "title": "Música de Esperanza", "type": "music", "startTime": "11:00", "endTime": "12:00", "description": "Selección musical.", "tags": ["musica"] },
-        { "id": "tue-12", "title": "Reflexión del Mediodía", "type": "program", "startTime": "12:00", "endTime": "13:00", "description": "Mensaje breve.", "tags": ["reflexion"] },
-        { "id": "tue-13", "title": "Alabanza Vespertina", "type": "music", "startTime": "13:00", "endTime": "14:00", "description": "Música para la tarde.", "tags": ["alabanza"] },
-        { "id": "tue-14", "title": "Reflexión Familiar", "type": "program", "startTime": "14:00", "endTime": "15:00", "description": "Mensaje para la familia.", "tags": ["familia"] },
-        { "id": "tue-15", "title": "Oración y Clamor", "type": "live", "startTime": "15:00", "endTime": "16:00", "description": "Intercesión en vivo.", "tags": ["oracion"] },
-        { "id": "tue-16", "title": "Estudio Bíblico", "type": "program", "startTime": "16:00", "endTime": "17:00", "description": "Enseñanza bíblica.", "tags": ["biblia"] },
-        { "id": "tue-17", "title": "Estudio Bíblico", "type": "program", "startTime": "17:00", "endTime": "18:00", "description": "Continuación.", "tags": ["biblia"] },
-        { "id": "tue-18", "title": "Música Nocturna", "type": "music", "startTime": "18:00", "endTime": "19:00", "description": "Adoración suave.", "tags": ["musica"] },
-        { "id": "tue-19", "title": "Música Nocturna", "type": "music", "startTime": "19:00", "endTime": "20:00", "description": "Adoración suave.", "tags": ["musica"] },
-        { "id": "tue-20", "title": "Música Instrumental", "type": "music", "startTime": "20:00", "endTime": "21:00", "description": "Instrumental nocturna.", "tags": ["instrumental"] },
-        { "id": "tue-21", "title": "Música Instrumental", "type": "music", "startTime": "21:00", "endTime": "22:00", "description": "Instrumental nocturna.", "tags": ["instrumental"] },
-        { "id": "tue-22", "title": "Música Instrumental", "type": "music", "startTime": "22:00", "endTime": "23:00", "description": "Instrumental nocturna.", "tags": ["instrumental"] },
-        { "id": "tue-23", "title": "Música Instrumental", "type": "music", "startTime": "23:00", "endTime": "00:00", "description": "Cierre del día.", "tags": ["instrumental"] }
+        {
+          "id": "tue-0500-prayer",
+          "title": "Oración al Alba",
+          "type": "program",
+          "startTime": "05:00",
+          "endTime": "06:00",
+          "host": "Equipo miDes",
+          "description": "Tiempo de oración al iniciar el día.",
+          "tags": ["oración", "mañana"]
+        },
+        {
+          "id": "tue-0600-instrumental",
+          "title": "Instrumental",
+          "type": "music",
+          "startTime": "06:00",
+          "endTime": "07:00",
+          "description": "Música instrumental suave.",
+          "tags": ["instrumental", "música"]
+        },
+        {
+          "id": "tue-0700-bible",
+          "title": "Lectura Biblia Guiada",
+          "type": "program",
+          "startTime": "07:00",
+          "endTime": "07:30",
+          "host": "Equipo miDes",
+          "description": "Lectura guiada de la Palabra.",
+          "tags": ["biblia", "lectura"]
+        },
+        {
+          "id": "tue-0730-devocional",
+          "title": "Devocional",
+          "type": "program",
+          "startTime": "07:30",
+          "endTime": "08:00",
+          "host": "Ps. Ramón De la Cruz",
+          "description": "Reflexión breve para comenzar el día.",
+          "tags": ["devocional"]
+        },
+        {
+          "id": "tue-0800-adoracion",
+          "title": "Música de Adoración",
+          "type": "music",
+          "startTime": "08:00",
+          "endTime": "09:00",
+          "description": "Selección de adoración.",
+          "tags": ["adoración", "música"]
+        },
+        {
+          "id": "tue-0900-hablemos-oracion",
+          "title": "Hablemos de Oración",
+          "type": "program",
+          "startTime": "09:00",
+          "endTime": "10:00",
+          "host": "Ps. Katherin Taveras",
+          "description": "Conversaciones para fortalecer la vida de oración.",
+          "tags": ["oración", "enseñanza"]
+        },
+        {
+          "id": "tue-1000-music",
+          "title": "Música",
+          "type": "music",
+          "startTime": "10:00",
+          "endTime": "11:00",
+          "description": "Música edificante.",
+          "tags": ["música"]
+        },
+        {
+          "id": "tue-1100-music",
+          "title": "Música",
+          "type": "music",
+          "startTime": "11:00",
+          "endTime": "12:00",
+          "description": "Música edificante.",
+          "tags": ["música"]
+        },
+        {
+          "id": "tue-1200-hola-mujer",
+          "title": "¡Hola Mujer!",
+          "type": "program",
+          "startTime": "12:00",
+          "endTime": "13:00",
+          "host": "Ps. Yomaira Jiménez",
+          "description": "Espacio para la mujer cristiana.",
+          "tags": ["mujer", "familia"]
+        },
+        {
+          "id": "tue-1300-postrecito",
+          "title": "Postrecito de Vida",
+          "type": "program",
+          "startTime": "13:00",
+          "endTime": "13:30",
+          "host": "Ps. Ramón De la Cruz",
+          "description": "Reflexión corta y práctica.",
+          "tags": ["reflexión", "devocional"]
+        },
+        {
+          "id": "tue-1330-music",
+          "title": "Música",
+          "type": "music",
+          "startTime": "13:30",
+          "endTime": "14:00",
+          "description": "Música edificante.",
+          "tags": ["música"]
+        },
+        {
+          "id": "tue-1400-adoracion",
+          "title": "Música de Adoración",
+          "type": "music",
+          "startTime": "14:00",
+          "endTime": "15:00",
+          "description": "Selección de adoración.",
+          "tags": ["adoración", "música"]
+        },
+        {
+          "id": "tue-1500-ofrenda",
+          "title": "La Ofrenda de la Tarde",
+          "type": "program",
+          "startTime": "15:00",
+          "endTime": "16:00",
+          "host": "Equipo miDes",
+          "description": "Espacio de reflexión y gratitud.",
+          "tags": ["gratitud", "reflexión"]
+        },
+        {
+          "id": "tue-1600-music",
+          "title": "Música",
+          "type": "music",
+          "startTime": "16:00",
+          "endTime": "17:00",
+          "description": "Música edificante.",
+          "tags": ["música"]
+        },
+        {
+          "id": "tue-1700-music",
+          "title": "Música",
+          "type": "music",
+          "startTime": "17:00",
+          "endTime": "18:00",
+          "description": "Música edificante.",
+          "tags": ["música"]
+        },
+        {
+          "id": "tue-1800-arranca-fa",
+          "title": "Arranca en Fa",
+          "type": "program",
+          "startTime": "18:00",
+          "endTime": "19:00",
+          "host": "Manuel Pelaez",
+          "description": "Programa dinámico con enfoque musical y formativo.",
+          "tags": ["música", "formación"]
+        },
+        {
+          "id": "tue-1900-music",
+          "title": "Música",
+          "type": "music",
+          "startTime": "19:00",
+          "endTime": "20:00",
+          "description": "Música edificante.",
+          "tags": ["música"]
+        },
+        {
+          "id": "tue-2000-adoracion",
+          "title": "Música de Adoración",
+          "type": "music",
+          "startTime": "20:00",
+          "endTime": "21:00",
+          "description": "Selección de adoración.",
+          "tags": ["adoración", "música"]
+        },
+        {
+          "id": "tue-2100-vigilia",
+          "title": "Segunda Vigilia",
+          "type": "program",
+          "startTime": "21:00",
+          "endTime": "22:00",
+          "host": "Equipo miDes",
+          "description": "Tiempo de oración y búsqueda.",
+          "tags": ["oración", "vigilia"]
+        },
+        {
+          "id": "tue-2200-instrumental-night",
+          "title": "Música Instrumental",
+          "type": "music",
+          "startTime": "22:00",
+          "endTime": "23:00",
+          "description": "Instrumental nocturno.",
+          "tags": ["instrumental", "música"]
+        },
+        {
+          "id": "tue-2300-mensaje",
+          "title": "La Hora del Mensaje",
+          "type": "program",
+          "startTime": "23:00",
+          "endTime": "00:00",
+          "host": "Retransmitido",
+          "description": "Retransmisión de mensaje edificante.",
+          "tags": ["mensaje", "retransmisión"]
+        },
+        {
+          "id": "tue-0000-music",
+          "title": "Música",
+          "type": "music",
+          "startTime": "00:00",
+          "endTime": "05:00",
+          "description": "Música nocturna continua.",
+          "tags": ["música", "noche"]
+        }
       ]
     },
-
     {
       "day": "Wednesday",
-      "items": []
+      "items": [
+        {
+          "id": "wed-0500-prayer",
+          "title": "Oración al Alba",
+          "type": "program",
+          "startTime": "05:00",
+          "endTime": "06:00",
+          "host": "Equipo miDes",
+          "description": "Tiempo de oración al iniciar el día.",
+          "tags": ["oración", "mañana"]
+        },
+        {
+          "id": "wed-0600-instrumental",
+          "title": "Instrumental",
+          "type": "music",
+          "startTime": "06:00",
+          "endTime": "07:00",
+          "description": "Música instrumental suave.",
+          "tags": ["instrumental", "música"]
+        },
+        {
+          "id": "wed-0700-bible",
+          "title": "Lectura Biblia Guiada",
+          "type": "program",
+          "startTime": "07:00",
+          "endTime": "07:30",
+          "host": "Equipo miDes",
+          "description": "Lectura guiada de la Palabra.",
+          "tags": ["biblia", "lectura"]
+        },
+        {
+          "id": "wed-0730-devocional",
+          "title": "Devocional",
+          "type": "program",
+          "startTime": "07:30",
+          "endTime": "08:00",
+          "host": "Ps. Ramón De la Cruz",
+          "description": "Reflexión breve para comenzar el día.",
+          "tags": ["devocional"]
+        },
+        {
+          "id": "wed-0800-adoracion",
+          "title": "Música de Adoración",
+          "type": "music",
+          "startTime": "08:00",
+          "endTime": "09:00",
+          "description": "Selección de adoración.",
+          "tags": ["adoración", "música"]
+        },
+        {
+          "id": "wed-0900-new-program",
+          "title": "New Program",
+          "type": "program",
+          "startTime": "09:00",
+          "endTime": "10:00",
+          "host": "Pending host",
+          "description": "Espacio reservado para programa nuevo.",
+          "tags": ["nuevo"]
+        },
+        {
+          "id": "wed-1000-music",
+          "title": "Música",
+          "type": "music",
+          "startTime": "10:00",
+          "endTime": "11:00",
+          "description": "Música edificante.",
+          "tags": ["música"]
+        },
+        {
+          "id": "wed-1100-music",
+          "title": "Música",
+          "type": "music",
+          "startTime": "11:00",
+          "endTime": "12:00",
+          "description": "Música edificante.",
+          "tags": ["música"]
+        },
+        {
+          "id": "wed-1200-salud",
+          "title": "Programa de Salud",
+          "type": "program",
+          "startTime": "12:00",
+          "endTime": "13:00",
+          "host": "Pending host",
+          "description": "Espacio dedicado a temas de salud y bienestar.",
+          "tags": ["salud", "bienestar"]
+        },
+        {
+          "id": "wed-1300-postrecito",
+          "title": "Postrecito de Vida",
+          "type": "program",
+          "startTime": "13:00",
+          "endTime": "13:30",
+          "host": "Ps. Ramón De la Cruz",
+          "description": "Reflexión corta y práctica.",
+          "tags": ["reflexión", "devocional"]
+        },
+        {
+          "id": "wed-1330-music",
+          "title": "Música",
+          "type": "music",
+          "startTime": "13:30",
+          "endTime": "14:00",
+          "description": "Música edificante.",
+          "tags": ["música"]
+        },
+        {
+          "id": "wed-1400-adoracion",
+          "title": "Música de Adoración",
+          "type": "music",
+          "startTime": "14:00",
+          "endTime": "15:00",
+          "description": "Selección de adoración.",
+          "tags": ["adoración", "música"]
+        },
+        {
+          "id": "wed-1500-ofrenda",
+          "title": "La Ofrenda de la Tarde",
+          "type": "program",
+          "startTime": "15:00",
+          "endTime": "16:00",
+          "host": "Equipo miDes",
+          "description": "Espacio de reflexión y gratitud.",
+          "tags": ["gratitud", "reflexión"]
+        },
+        {
+          "id": "wed-1600-music",
+          "title": "Música",
+          "type": "music",
+          "startTime": "16:00",
+          "endTime": "17:00",
+          "description": "Música edificante.",
+          "tags": ["música"]
+        },
+        {
+          "id": "wed-1700-music",
+          "title": "Música",
+          "type": "music",
+          "startTime": "17:00",
+          "endTime": "18:00",
+          "description": "Música edificante.",
+          "tags": ["música"]
+        },
+        {
+          "id": "wed-1800-new-program",
+          "title": "New Program",
+          "type": "program",
+          "startTime": "18:00",
+          "endTime": "19:00",
+          "host": "Pending host",
+          "description": "Espacio reservado para programa nuevo.",
+          "tags": ["nuevo"]
+        },
+        {
+          "id": "wed-1900-music",
+          "title": "Música",
+          "type": "music",
+          "startTime": "19:00",
+          "endTime": "20:00",
+          "description": "Música edificante.",
+          "tags": ["música"]
+        },
+        {
+          "id": "wed-2000-adoracion",
+          "title": "Música de Adoración",
+          "type": "music",
+          "startTime": "20:00",
+          "endTime": "21:00",
+          "description": "Selección de adoración.",
+          "tags": ["adoración", "música"]
+        },
+        {
+          "id": "wed-2100-vigilia",
+          "title": "Segunda Vigilia",
+          "type": "program",
+          "startTime": "21:00",
+          "endTime": "22:00",
+          "host": "Equipo miDes",
+          "description": "Tiempo de oración y búsqueda.",
+          "tags": ["oración", "vigilia"]
+        },
+        {
+          "id": "wed-2200-conexion",
+          "title": "Conexión con el Alma",
+          "type": "program",
+          "startTime": "22:00",
+          "endTime": "23:00",
+          "host": "Ps. Ramón De la Cruz",
+          "description": "Reflexión nocturna y acompañamiento espiritual.",
+          "tags": ["alma", "reflexión"]
+        },
+        {
+          "id": "wed-2300-mensaje",
+          "title": "Hora del Mensaje",
+          "type": "program",
+          "startTime": "23:00",
+          "endTime": "00:00",
+          "host": "Retransmitido",
+          "description": "Retransmisión de mensaje edificante.",
+          "tags": ["mensaje", "retransmisión"]
+        },
+        {
+          "id": "wed-0000-music",
+          "title": "Música",
+          "type": "music",
+          "startTime": "00:00",
+          "endTime": "05:00",
+          "description": "Música nocturna continua.",
+          "tags": ["música", "noche"]
+        }
+      ]
     },
     {
       "day": "Thursday",
-      "items": []
+      "items": [
+        {
+          "id": "thu-0500-prayer",
+          "title": "Oración al Alba",
+          "type": "program",
+          "startTime": "05:00",
+          "endTime": "06:00",
+          "host": "Equipo miDes",
+          "description": "Tiempo de oración al iniciar el día.",
+          "tags": ["oración", "mañana"]
+        },
+        {
+          "id": "thu-0600-instrumental",
+          "title": "Instrumental",
+          "type": "music",
+          "startTime": "06:00",
+          "endTime": "07:00",
+          "description": "Música instrumental suave.",
+          "tags": ["instrumental", "música"]
+        },
+        {
+          "id": "thu-0700-bible",
+          "title": "Lectura Biblia Guiada",
+          "type": "program",
+          "startTime": "07:00",
+          "endTime": "07:30",
+          "host": "Equipo miDes",
+          "description": "Lectura guiada de la Palabra.",
+          "tags": ["biblia", "lectura"]
+        },
+        {
+          "id": "thu-0730-devocional",
+          "title": "Devocional",
+          "type": "program",
+          "startTime": "07:30",
+          "endTime": "08:00",
+          "host": "Ps. Ramón De la Cruz",
+          "description": "Reflexión breve para comenzar el día.",
+          "tags": ["devocional"]
+        },
+        {
+          "id": "thu-0800-adoracion",
+          "title": "Música de Adoración",
+          "type": "music",
+          "startTime": "08:00",
+          "endTime": "09:00",
+          "description": "Selección de adoración.",
+          "tags": ["adoración", "música"]
+        },
+        {
+          "id": "thu-0900-alzar-voz",
+          "title": "Tiempo de Alzar la Voz",
+          "type": "program",
+          "startTime": "09:00",
+          "endTime": "10:00",
+          "host": "Ps. Ramón De la Cruz",
+          "description": "Programa de reflexión y palabra con voz profética y pastoral.",
+          "tags": ["reflexión", "palabra"]
+        },
+        {
+          "id": "thu-1000-music",
+          "title": "Música",
+          "type": "music",
+          "startTime": "10:00",
+          "endTime": "11:00",
+          "description": "Música edificante.",
+          "tags": ["música"]
+        },
+        {
+          "id": "thu-1100-music",
+          "title": "Música",
+          "type": "music",
+          "startTime": "11:00",
+          "endTime": "12:00",
+          "description": "Música edificante.",
+          "tags": ["música"]
+        },
+        {
+          "id": "thu-1200-hola-mujer",
+          "title": "¡Hola Mujer!",
+          "type": "program",
+          "startTime": "12:00",
+          "endTime": "13:00",
+          "host": "Ps. Yomaira Jiménez",
+          "description": "Espacio para la mujer cristiana.",
+          "tags": ["mujer", "familia"]
+        },
+        {
+          "id": "thu-1300-postrecito",
+          "title": "Postrecito de Vida",
+          "type": "program",
+          "startTime": "13:00",
+          "endTime": "13:30",
+          "host": "Ps. Ramón De la Cruz",
+          "description": "Reflexión corta y práctica.",
+          "tags": ["reflexión", "devocional"]
+        },
+        {
+          "id": "thu-1330-music",
+          "title": "Música",
+          "type": "music",
+          "startTime": "13:30",
+          "endTime": "14:00",
+          "description": "Música edificante.",
+          "tags": ["música"]
+        },
+        {
+          "id": "thu-1400-adoracion",
+          "title": "Música de Adoración",
+          "type": "music",
+          "startTime": "14:00",
+          "endTime": "15:00",
+          "description": "Selección de adoración.",
+          "tags": ["adoración", "música"]
+        },
+        {
+          "id": "thu-1500-ofrenda",
+          "title": "La Ofrenda de la Tarde",
+          "type": "program",
+          "startTime": "15:00",
+          "endTime": "16:00",
+          "host": "Equipo miDes",
+          "description": "Espacio de reflexión y gratitud.",
+          "tags": ["gratitud", "reflexión"]
+        },
+        {
+          "id": "thu-1600-music",
+          "title": "Música",
+          "type": "music",
+          "startTime": "16:00",
+          "endTime": "17:00",
+          "description": "Música edificante.",
+          "tags": ["música"]
+        },
+        {
+          "id": "thu-1700-music",
+          "title": "Música",
+          "type": "music",
+          "startTime": "17:00",
+          "endTime": "18:00",
+          "description": "Música edificante.",
+          "tags": ["música"]
+        },
+        {
+          "id": "thu-1800-new-program",
+          "title": "New Program",
+          "type": "program",
+          "startTime": "18:00",
+          "endTime": "19:00",
+          "host": "Pending host",
+          "description": "Espacio reservado para programa nuevo.",
+          "tags": ["nuevo"]
+        },
+        {
+          "id": "thu-1900-music",
+          "title": "Música",
+          "type": "music",
+          "startTime": "19:00",
+          "endTime": "20:00",
+          "description": "Música edificante.",
+          "tags": ["música"]
+        },
+        {
+          "id": "thu-2000-discipulado",
+          "title": "Discipulado en Casa",
+          "type": "program",
+          "startTime": "20:00",
+          "endTime": "21:00",
+          "host": "Iglesia miDes en vivo",
+          "description": "Espacio de discipulado y formación cristiana.",
+          "tags": ["discipulado", "enseñanza"]
+        },
+        {
+          "id": "thu-2100-vigilia",
+          "title": "Segunda Vigilia",
+          "type": "program",
+          "startTime": "21:00",
+          "endTime": "22:00",
+          "host": "Equipo miDes",
+          "description": "Tiempo de oración y búsqueda.",
+          "tags": ["oración", "vigilia"]
+        },
+        {
+          "id": "thu-2200-instrumental-night",
+          "title": "Música Instrumental",
+          "type": "music",
+          "startTime": "22:00",
+          "endTime": "23:00",
+          "description": "Instrumental nocturno.",
+          "tags": ["instrumental", "música"]
+        },
+        {
+          "id": "thu-2300-mensaje",
+          "title": "Hora del Mensaje",
+          "type": "program",
+          "startTime": "23:00",
+          "endTime": "00:00",
+          "host": "Retransmitido",
+          "description": "Retransmisión de mensaje edificante.",
+          "tags": ["mensaje", "retransmisión"]
+        },
+        {
+          "id": "thu-0000-music",
+          "title": "Música",
+          "type": "music",
+          "startTime": "00:00",
+          "endTime": "05:00",
+          "description": "Música nocturna continua.",
+          "tags": ["música", "noche"]
+        }
+      ]
     },
     {
       "day": "Friday",
-      "items": []
+      "items": [
+        {
+          "id": "fri-0500-prayer",
+          "title": "Oración al Alba",
+          "type": "program",
+          "startTime": "05:00",
+          "endTime": "06:00",
+          "host": "Equipo miDes",
+          "description": "Tiempo de oración al iniciar el día.",
+          "tags": ["oración", "mañana"]
+        },
+        {
+          "id": "fri-0600-instrumental",
+          "title": "Instrumental",
+          "type": "music",
+          "startTime": "06:00",
+          "endTime": "07:00",
+          "description": "Música instrumental suave.",
+          "tags": ["instrumental", "música"]
+        },
+        {
+          "id": "fri-0700-bible",
+          "title": "Lectura Biblia Guiada",
+          "type": "program",
+          "startTime": "07:00",
+          "endTime": "07:30",
+          "host": "Equipo miDes",
+          "description": "Lectura guiada de la Palabra.",
+          "tags": ["biblia", "lectura"]
+        },
+        {
+          "id": "fri-0730-devocional",
+          "title": "Devocional",
+          "type": "program",
+          "startTime": "07:30",
+          "endTime": "08:00",
+          "host": "Ps. Ramón De la Cruz",
+          "description": "Reflexión breve para comenzar el día.",
+          "tags": ["devocional"]
+        },
+        {
+          "id": "fri-0800-adoracion",
+          "title": "Música de Adoración",
+          "type": "music",
+          "startTime": "08:00",
+          "endTime": "09:00",
+          "description": "Selección de adoración.",
+          "tags": ["adoración", "música"]
+        },
+        {
+          "id": "fri-0900-new-program",
+          "title": "New Program",
+          "type": "program",
+          "startTime": "09:00",
+          "endTime": "10:00",
+          "host": "Pending host",
+          "description": "Espacio reservado para programa nuevo.",
+          "tags": ["nuevo"]
+        },
+        {
+          "id": "fri-1000-music",
+          "title": "Música",
+          "type": "music",
+          "startTime": "10:00",
+          "endTime": "11:00",
+          "description": "Música edificante.",
+          "tags": ["música"]
+        },
+        {
+          "id": "fri-1100-music",
+          "title": "Música",
+          "type": "music",
+          "startTime": "11:00",
+          "endTime": "12:00",
+          "description": "Música edificante.",
+          "tags": ["música"]
+        },
+        {
+          "id": "fri-1200-new-program",
+          "title": "New Program",
+          "type": "program",
+          "startTime": "12:00",
+          "endTime": "13:00",
+          "host": "Pending host",
+          "description": "Espacio reservado para programa nuevo.",
+          "tags": ["nuevo"]
+        },
+        {
+          "id": "fri-1300-postrecito",
+          "title": "Postrecito de Vida",
+          "type": "program",
+          "startTime": "13:00",
+          "endTime": "13:30",
+          "host": "Ps. Ramón De la Cruz",
+          "description": "Reflexión corta y práctica.",
+          "tags": ["reflexión", "devocional"]
+        },
+        {
+          "id": "fri-1330-music",
+          "title": "Música",
+          "type": "music",
+          "startTime": "13:30",
+          "endTime": "14:00",
+          "description": "Música edificante.",
+          "tags": ["música"]
+        },
+        {
+          "id": "fri-1400-adoracion",
+          "title": "Música de Adoración",
+          "type": "music",
+          "startTime": "14:00",
+          "endTime": "15:00",
+          "description": "Selección de adoración.",
+          "tags": ["adoración", "música"]
+        },
+        {
+          "id": "fri-1500-ofrenda",
+          "title": "La Ofrenda de la Tarde",
+          "type": "program",
+          "startTime": "15:00",
+          "endTime": "16:00",
+          "host": "Equipo miDes",
+          "description": "Espacio de reflexión y gratitud.",
+          "tags": ["gratitud", "reflexión"]
+        },
+        {
+          "id": "fri-1600-music",
+          "title": "Música",
+          "type": "music",
+          "startTime": "16:00",
+          "endTime": "17:00",
+          "description": "Música edificante.",
+          "tags": ["música"]
+        },
+        {
+          "id": "fri-1700-music",
+          "title": "Música",
+          "type": "music",
+          "startTime": "17:00",
+          "endTime": "18:00",
+          "description": "Música edificante.",
+          "tags": ["música"]
+        },
+        {
+          "id": "fri-1800-new-program",
+          "title": "New Program",
+          "type": "program",
+          "startTime": "18:00",
+          "endTime": "19:00",
+          "host": "Pending host",
+          "description": "Espacio reservado para programa nuevo.",
+          "tags": ["nuevo"]
+        },
+        {
+          "id": "fri-1900-music",
+          "title": "Música",
+          "type": "music",
+          "startTime": "19:00",
+          "endTime": "20:00",
+          "description": "Música edificante.",
+          "tags": ["música"]
+        },
+        {
+          "id": "fri-2000-music",
+          "title": "Música",
+          "type": "music",
+          "startTime": "20:00",
+          "endTime": "21:00",
+          "description": "Música edificante.",
+          "tags": ["música"]
+        },
+        {
+          "id": "fri-2100-vigilia",
+          "title": "Segunda Vigilia",
+          "type": "program",
+          "startTime": "21:00",
+          "endTime": "22:00",
+          "host": "Equipo miDes",
+          "description": "Tiempo de oración y búsqueda.",
+          "tags": ["oración", "vigilia"]
+        },
+        {
+          "id": "fri-2200-conexion",
+          "title": "Conexión con el Alma",
+          "type": "program",
+          "startTime": "22:00",
+          "endTime": "23:00",
+          "host": "Ps. Ramón De la Cruz",
+          "description": "Reflexión nocturna y acompañamiento espiritual.",
+          "tags": ["alma", "reflexión"]
+        },
+        {
+          "id": "fri-2300-mensaje",
+          "title": "Hora del Mensaje",
+          "type": "program",
+          "startTime": "23:00",
+          "endTime": "00:00",
+          "host": "Retransmitido",
+          "description": "Retransmisión de mensaje edificante.",
+          "tags": ["mensaje", "retransmisión"]
+        },
+        {
+          "id": "fri-0000-music",
+          "title": "Música",
+          "type": "music",
+          "startTime": "00:00",
+          "endTime": "05:00",
+          "description": "Música nocturna continua.",
+          "tags": ["música", "noche"]
+        }
+      ]
     },
     {
       "day": "Saturday",
-      "items": []
-    },
-    {
-      "day": "Sunday",
-      "items": []
+      "items": [
+        {
+          "id": "sat-0500-prayer",
+          "title": "Oración al Alba",
+          "type": "program",
+          "startTime": "05:00",
+          "endTime": "06:00",
+          "host": "Equipo miDes",
+          "description": "Tiempo de oración al iniciar el día.",
+          "tags": ["oración", "mañana"]
+        },
+        {
+          "id": "sat-0600-instrumental",
+          "title": "Instrumental",
+          "type": "music",
+          "startTime": "06:00",
+          "endTime": "07:00",
+          "description": "Música instrumental suave.",
+          "tags": ["instrumental", "música"]
+        },
+        {
+          "id": "sat-0700-bible",
+          "title": "Lectura Biblia Guiada",
+          "type": "program",
+          "startTime": "07:00",
+          "endTime": "07:30",
+          "host": "Equipo miDes",
+          "description": "Lectura guiada de la Palabra.",
+          "tags": ["biblia", "lectura"]
+        },
+        {
+          "id": "sat-0730-devocional",
+          "title": "Devocional",
+          "type": "program",
+          "startTime": "07:30",
+          "endTime": "08:00",
+          "host": "Ps. Ramón De la Cruz",
+          "description": "Reflexión breve para comenzar el día.",
+          "tags": ["devocional"]
+        },
+        {
+          "id": "sat-0800-adoracion",
+          "title": "Música de Adoración",
+          "type": "music",
+          "startTime": "08:00",
+          "endTime": "09:00",
+          "description": "Selección de adoración.",
+          "tags": ["adoración", "música"]
+        },
+        {
+          "id": "sat-0900-new-program",
+          "title": "New Program",
+          "type": "program",
+          "startTime": "09:00",
+          "endTime": "10:00",
+          "host": "Pending host",
+          "description": "Espacio reservado para programa nuevo.",
+          "tags": ["nuevo"]
+        },
+        {
+          "id": "sat-1000-new-program",
+          "title": "New Program",
+          "type": "program",
+          "startTime": "10:00",
+          "endTime": "11:00",
+          "host": "Pending host",
+          "description": "Espacio reservado para programa nuevo.",
+          "tags": ["nuevo"]
+        },
+        {
+          "id": "sat-1100-jovenes",
+          "title": "Los Jóvenes Preguntan",
+          "type": "program",
+          "startTime": "11:00",
+          "endTime": "12:00",
+          "host": "Equipo miDes",
+          "description": "Programa con enfoque juvenil y respuestas prácticas.",
+          "tags": ["jóvenes", "preguntas"]
+        },
+        {
+          "id": "sat-1200-news",
+          "title": "Cristianos por el Mundo News",
+          "type": "program",
+          "startTime": "12:00",
+          "endTime": "13:00",
+          "host": "Ps. Ramón De la Cruz",
+          "description": "Noticias y actualidad desde una perspectiva cristiana.",
+          "tags": ["noticias", "actualidad"]
+        },
+        {
+          "id": "sat-1300-postrecito",
+          "title": "Postrecito de Vida",
+          "type": "program",
+          "startTime": "13:00",
+          "endTime": "13:30",
+          "host": "Ps. Ramón De la Cruz",
+          "description": "Reflexión corta y práctica.",
+          "tags": ["reflexión", "devocional"]
+        },
+        {
+          "id": "sat-1330-music",
+          "title": "Música",
+          "type": "music",
+          "startTime": "13:30",
+          "endTime": "14:00",
+          "description": "Música edificante.",
+          "tags": ["música"]
+        },
+        {
+          "id": "sat-1400-adoracion",
+          "title": "Música de Adoración",
+          "type": "music",
+          "startTime": "14:00",
+          "endTime": "15:00",
+          "description": "Selección de adoración.",
+          "tags": ["adoración", "música"]
+        },
+        {
+          "id": "sat-1500-ofrenda",
+          "title": "La Ofrenda de la Tarde",
+          "type": "program",
+          "startTime": "15:00",
+          "endTime": "16:00",
+          "host": "Equipo miDes",
+          "description": "Espacio de reflexión y gratitud.",
+          "tags": ["gratitud", "reflexión"]
+        },
+        {
+          "id": "sat-1600-music",
+          "title": "Música",
+          "type": "music",
+          "startTime": "16:00",
+          "endTime": "17:00",
+          "description": "Música edificante.",
+          "tags": ["música"]
+        },
+        {
+          "id": "sat-1700-music",
+          "title": "Música",
+          "type": "music",
+          "startTime": "17:00",
+          "endTime": "18:00",
+          "description": "Música edificante.",
+          "tags": ["música"]
+        },
+        {
+          "id": "sat-1800-new-program",
+          "title": "New Program",
+          "type": "program",
+          "startTime": "18:00",
+          "endTime": "19:00",
+          "host": "Pending host",
+          "description": "Espacio reservado para programa nuevo.",
+          "tags": ["nuevo"]
+        },
+        {
+          "id": "sat-1900-music",
+          "title": "Música",
+          "type": "music",
+          "startTime": "19:00",
+          "endTime": "20:00",
+          "description": "Música edificante.",
+          "tags": ["música"]
+        },
+        {
+          "id": "sat-2000-music",
+          "title": "Música",
+          "type": "music",
+          "startTime": "20:00",
+          "endTime": "21:00",
+          "description": "Música edificante.",
+          "tags": ["música"]
+        },
+        {
+          "id": "sat-2100-vigilia",
+          "title": "Segunda Vigilia",
+          "type": "program",
+          "startTime": "21:00",
+          "endTime": "22:00",
+          "host": "Equipo miDes",
+          "description": "Tiempo de oración y búsqueda.",
+          "tags": ["oración", "vigilia"]
+        },
+        {
+          "id": "sat-2200-music",
+          "title": "Música",
+          "type": "music",
+          "startTime": "22:00",
+          "endTime": "23:00",
+          "description": "Música edificante.",
+          "tags": ["música"]
+        },
+        {
+          "id": "sat-2300-mensaje",
+          "title": "Hora del Mensaje",
+          "type": "program",
+          "startTime": "23:00",
+          "endTime": "00:00",
+          "host": "Retransmitido",
+          "description": "Retransmisión de mensaje edificante.",
+          "tags": ["mensaje", "retransmisión"]
+        },
+        {
+          "id": "sat-0000-music",
+          "title": "Música",
+          "type": "music",
+          "startTime": "00:00",
+          "endTime": "05:00",
+          "description": "Música nocturna continua.",
+          "tags": ["música", "noche"]
+        }
+      ]
     }
   ]
 }
