@@ -676,26 +676,33 @@ export function RadioScreen() {
           />
 
           {/* PROGRAM MENU SHEET */}
-            <SlidingSheet
-              visible={programSheetOpen}
-              title={selectedProgram ? selectedProgram.title : "PROGRAMA"}
-              onClose={() => setProgramSheetOpen(false)}
-              items={[
-                { label: "Agendar", icon: "calendar", onPress: () => console.log("Schedule program", selectedProgram) },
-                { label: "Compartir", icon: "share-2", onPress: () => console.log("Share program", selectedProgram) },
+      <SlidingSheet
+        visible={programSheetOpen}
+        title={selectedProgram ? selectedProgram.title : "PROGRAMA"}
+        onClose={() => setProgramSheetOpen(false)}
+        items={[
+          {
+            label: "Compartir",
+            icon: "share-2",
+            onPress: () => console.log("Share program", selectedProgram),
+          },
 
-                // ✅ Solo mostrar “episodios / anteriores” si NO es música
-                ...(selectedProgram?.kind === "show"
-                  ? [
-                      {
-                        label: "Ver programas anteriores",
-                        icon: "clock",
-                        onPress: () => console.log("Past episodes", selectedProgram),
-                      },
-                    ]
-                  : []),
-              ]}
-            />
+          ...(selectedProgram?.kind === "show"
+            ? [
+                {
+                  label: "Abrir detalle",
+                  icon: "arrow-up-right",
+                  onPress: () => {
+                    if (!selectedProgram?.id) return;
+                    navigation.navigate("ProgramDetail", {
+                      programId: selectedProgram.id,
+                    });
+                  },
+                },
+              ]
+            : []),
+        ]}
+      />
         </View>
       </ScrollView>
     </View>

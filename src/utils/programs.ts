@@ -7,23 +7,41 @@ export type ResolvedProgram = Program & {
   description?: string;
   featured?: boolean;
   visualKey?: string;
+  dayIndex: number;
+  dayLabel: string;
 };
 
-export function findProgramById(programId: string): Program | null {
-  const days = Object.values(weeklySchedule);
+const DAY_LABELS: Record<number, string> = {
+  0: "Domingo",
+  1: "Lunes",
+  2: "Martes",
+  3: "Miércoles",
+  4: "Jueves",
+  5: "Viernes",
+  6: "Sábado",
+};
 
-  for (const dayPrograms of days) {
+export function findProgramById(programId: string): { program: Program; dayIndex: number } | null {
+  const entries = Object.entries(weeklySchedule);
+
+  for (const [dayKey, dayPrograms] of entries) {
     const found = dayPrograms.find((p) => p.id === programId);
-    if (found) return found;
+    if (found) {
+      return {
+        program: found,
+        dayIndex: Number(dayKey),
+      };
+    }
   }
 
   return null;
 }
 
 export function resolveProgramById(programId: string): ResolvedProgram | null {
-  const base = findProgramById(programId);
-  if (!base) return null;
+  const found = findProgramById(programId);
+  if (!found) return null;
 
+  const { program: base, dayIndex } = found;
   const catalog = (programCatalogById as Record<string, any>)[programId];
 
   return {
@@ -38,5 +56,7 @@ export function resolveProgramById(programId: string): ResolvedProgram | null {
         : "Programa de contenido dentro de la programación oficial de miDes Radio."),
     featured: !!catalog?.featured,
     visualKey: catalog?.visualKey,
+    dayIndex,
+    dayLabel: DAY_LABELS[dayIndex] ?? "Día no definido",
   };
 }

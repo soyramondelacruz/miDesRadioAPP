@@ -1,9 +1,9 @@
 import React from "react";
 import {
   NavigationContainer,
-  useNavigationContainerRef,
   DefaultTheme,
   DarkTheme,
+  NavigationContainerRef,
 } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { View } from "react-native";
@@ -29,8 +29,14 @@ function getActiveRouteName(state: any): string {
   return route.name;
 }
 
-export function RootNavigator({ theme }: any) {
-  const navigationRef = useNavigationContainerRef();
+type RootNavigatorProps = {
+  theme: any;
+};
+
+export const RootNavigator = React.forwardRef<
+  NavigationContainerRef<RootStackParamList>,
+  RootNavigatorProps
+>(({ theme }, ref) => {
   const [currentRoute, setCurrentRoute] = React.useState("Radio");
 
   const isDark = theme?.background === "#0E1624";
@@ -49,17 +55,18 @@ export function RootNavigator({ theme }: any) {
     },
   };
 
+  const HIDE_MINI_PLAYER_ROUTES = ["Radio", "ProgramDetail", "Episodes"];
+
   return (
     <NavigationContainer
-      ref={navigationRef}
+      ref={ref}
       theme={navigationTheme}
       onStateChange={() => {
-        const state = navigationRef.getRootState();
+        const state = (ref as React.RefObject<NavigationContainerRef<RootStackParamList>>)?.current?.getRootState?.();
         if (state) setCurrentRoute(getActiveRouteName(state));
       }}
     >
       <View style={{ flex: 1, backgroundColor: navigationTheme.colors.background }}>
-        {/* STACK */}
         <Stack.Navigator screenOptions={{ headerShown: false }}>
           <Stack.Screen name="Tabs" component={AppTabs} />
 
@@ -80,18 +87,16 @@ export function RootNavigator({ theme }: any) {
             component={EpisodesScreen}
             options={{ headerShown: false }}
           />
-
         </Stack.Navigator>
 
-        {/* MINI PLAYER (solo si NO estás en Radio) */}
-        {currentRoute !== "Radio" && (
+        {!HIDE_MINI_PLAYER_ROUTES.includes(currentRoute) && (
           <View
             pointerEvents="box-none"
             style={{
               position: "absolute",
               left: 0,
               right: 0,
-              bottom: 70,
+              bottom: 93,
             }}
           >
             <MiniPlayer />
@@ -100,4 +105,6 @@ export function RootNavigator({ theme }: any) {
       </View>
     </NavigationContainer>
   );
-}
+});
+
+RootNavigator.displayName = "RootNavigator";

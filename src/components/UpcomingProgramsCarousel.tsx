@@ -1,39 +1,246 @@
 // src/components/UpcomingProgramsCarousel.tsx
-import React, { useMemo } from "react";
-import { View, Text, ScrollView, Pressable, Image } from "react-native";
+import React, { useEffect, useMemo, useState } from "react";
+import {
+  View,
+  Text,
+  ScrollView,
+  Pressable,
+  Image,
+  Alert,
+} from "react-native";
 import { Feather } from "@expo/vector-icons";
+import * as Notifications from "expo-notifications";
 
-import { Program } from "../data/schedule";
+import { STATION_TIMEZONE, weeklySchedule, Program } from "../data/schedule";
 import { getProgramVisuals } from "../data/programVisuals";
+import { useRadioPlayer } from "../context/RadioPlayerContext";
+
+function timeToMinutes(time: string) {
+  const [h, m] = time.split(":").map(Number);
+  return h * 60 + m;
+}
+
+function isNowInProgram(nowMin: number, start: number, end: number) {
+  if (end > start) return nowMin >= start && nowMin < end;
+  return nowMin >= start || nowMin < end;
+}
+
+function getStationNow(baseDate: Date) {
+  const formatter = new Intl.DateTimeFormat("en-US", {
+    timeZone: STATION_TIMEZONE,
+    hour12: false,
+    hour: "2-digit",
+    minute: "2-digit",
+    weekday: "short",
+  });
+
+  const parts = formatter.formatToParts(baseDate);
+  const hour = Number(parts.find((p) => p.type === "hour")?.value ?? 0);
+  const minute = Number(parts.find((p) => p.type === "minute")?.value ?? 0);
+  const weekdayStr = parts.find((p) => p.type === "weekday")?.value ?? "Mon";
+
+  const weekdayMap: Record<string, number> = {
+    Sun: 0,
+    Mon: 1,
+    Tue: 2,
+    Wed: 3,
+    Thu: 4,
+    Fri: 5,
+    Sat: 6,
+  };
+
+  return { day: weekdayMap[weekdayStr], minutes: hour * 60 + minute };
+}
+
+function getCurrentAndUpcoming(day: number, minutes: number) {
+  const today = weeklySchedule[day] ?? [];
+
+  let current: Program | null = null;
+  for (const p of today) {
+    const s = timeToMinutes(p.start);
+    const e = timeToMinutes(p.end);
+    if (isNowInProgram(minutes, s, e)) {
+      current = p;
+      break;
+    }
+  }
+
+  const upcoming: Program[] = [];
+  for (const p of today) {
+    const s = timeToMinutes(p.start);
+    if (minutes <= s) upcoming.push(p);
+  }
+
+  if (upcoming.length === 0) upcoming.push(...today.slice(0, 6));
+
+  const cleaned = upcoming.filter((p) => p.id !== current?.id);
+  return { current, upcoming: cleaned.slice(0, 6) };
+}
+
+function getNextOccurrenceForBlock(program: Program, now: Date, dayIndex: number) {
+  const dayDiff = (dayIndex - now.getDay() + 7) % 7;
+  const [h, m] = program.start.split(":").map(Number);
+
+  const next = new Date(now);
+  next.setHours(h, m, 0, 0);
+  next.setDate(now.getDate() + dayDiff);
+
+  if (dayDiff === 0 && next <= now) {
+    next.setDate(next.getDate() + 7);
+  }
+
+  return next;
+}
+
+async function requestNotificationPermissions() {
+  const settings = await Notifications.getPermissionsAsync();
+
+  let finalStatus = settings.status;
+  if (finalStatus !== "granted") {
+    const requested = await Notifications.requestPermissionsAsync();
+    finalStatus = requested.status;
+  }
+
+  return finalStatus === "granted";
+}
 
 type Props = {
   title?: string;
-  programs: Program[];            // 👈 upcoming (ya filtrados en RadioScreen)
-  currentProgram?: Program | null; // 👈 para resaltar si aparece o para mostrar "AHORA"
+  programs?: Program[];
   onOpenProgramMenu?: (program: Program) => void;
 };
-
-function metaLabel(p: Program) {
-  const time = `${p.start} – ${p.end}`;
-  return p.host ? `${time} • ${p.host}` : time;
-}
 
 export function UpcomingProgramsCarousel({
   title = "Lo que viene",
   programs,
-  currentProgram = null,
   onOpenProgramMenu,
 }: Props) {
-  // (Opcional) si quieres incluir el current arriba del carrusel, lo hacemos aquí.
-  // Por ahora: resaltamos si el current aparece en la lista, y si no, solo mostramos upcoming.
-  const list = useMemo(() => programs ?? [], [programs]);
+  const { simulatedISOTime } = useRadioPlayer();
 
-  if (!list.length) {
+  const [tick, setTick] = useState(0);
+  const [scheduledByProgramId, setScheduledByProgramId] = useState<Record<string, string>>({});
+  const [schedulingProgramId, setSchedulingProgramId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const id = setInterval(() => setTick((t) => t + 1), 60_000);
+    return () => clearInterval(id);
+  }, []);
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function loadScheduledNotifications() {
+      try {
+        const scheduled = await Notifications.getAllScheduledNotificationsAsync();
+        const map: Record<string, string> = {};
+
+        for (const item of scheduled) {
+          const pid = item.content.data?.programId;
+          if (typeof pid === "string") {
+            map[pid] = item.identifier;
+          }
+        }
+
+        if (mounted) setScheduledByProgramId(map);
+      } catch (error) {
+        console.log("Load scheduled notifications error:", error);
+      }
+    }
+
+    loadScheduledNotifications();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const baseDate = useMemo(() => {
+    return simulatedISOTime ? new Date(simulatedISOTime) : new Date();
+  }, [simulatedISOTime, tick]);
+
+  const { day, minutes } = useMemo(() => getStationNow(baseDate), [baseDate]);
+  const derived = useMemo(() => getCurrentAndUpcoming(day, minutes), [day, minutes]);
+  const upcoming = programs ?? derived.upcoming;
+
+  async function handleScheduleProgram(program: Program) {
+    try {
+      if (schedulingProgramId) return;
+      setSchedulingProgramId(program.id);
+
+      const existingId = scheduledByProgramId[program.id];
+      if (existingId) {
+        await Notifications.cancelScheduledNotificationAsync(existingId);
+        setScheduledByProgramId((prev) => {
+          const next = { ...prev };
+          delete next[program.id];
+          return next;
+        });
+
+        Alert.alert("Recordatorio eliminado", `Ya no te avisaremos sobre ${program.title}.`);
+        return;
+      }
+
+      const granted = await requestNotificationPermissions();
+      if (!granted) {
+        Alert.alert(
+          "Permiso requerido",
+          "Activa las notificaciones para que podamos recordarte este bloque."
+        );
+        return;
+      }
+
+      const now = new Date();
+      const nextOccurrence = getNextOccurrenceForBlock(program, now, day);
+      const fiveMinutesBefore = new Date(nextOccurrence.getTime() - 5 * 60 * 1000);
+      const reminderDate = fiveMinutesBefore > now ? fiveMinutesBefore : new Date(Date.now() + 10000);
+
+      const identifier = await Notifications.scheduleNotificationAsync({
+        content: {
+          title: program.title,
+          body:
+            fiveMinutesBefore > now
+              ? `Comienza en 5 minutos • ${program.start} - ${program.end}`
+              : `Comienza pronto • ${program.start} - ${program.end}`,
+          sound: true,
+          data: {
+            screen: "ProgramDetail",
+            programId: program.id,
+          },
+        },
+        trigger: {
+          type: Notifications.SchedulableTriggerInputTypes.DATE,
+          date: reminderDate,
+        },
+      });
+
+      setScheduledByProgramId((prev) => ({
+        ...prev,
+        [program.id]: identifier,
+      }));
+
+      Alert.alert(
+        "Recordatorio activado",
+        fiveMinutesBefore > now
+          ? `Te avisaremos 5 minutos antes de que comience ${program.title}.`
+          : `Te avisaremos en breve porque ${program.title} está próximo a comenzar.`
+      );
+    } catch (error) {
+      console.log("Schedule upcoming notification error:", error);
+      Alert.alert(
+        "No se pudo programar",
+        "Ocurrió un problema al crear el recordatorio."
+      );
+    } finally {
+      setSchedulingProgramId(null);
+    }
+  }
+
+  if (!upcoming.length) {
     return (
       <View style={{ marginTop: 18 }}>
         <Text style={{ fontSize: 16, fontWeight: "900", color: "#FFFFFF" }}>{title}</Text>
         <Text style={{ marginTop: 8, color: "rgba(255,255,255,0.65)", fontWeight: "700" }}>
-          Aún no hay programación cargada.
+          Aún no hay programación cargada para este día.
         </Text>
       </View>
     );
@@ -55,26 +262,27 @@ export function UpcomingProgramsCarousel({
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ gap: 12, paddingBottom: 6, paddingRight: 6 }}
+        contentContainerStyle={{ gap: 12, paddingBottom: 6 }}
       >
-        {list.map((p) => {
-          const isCurrent = !!currentProgram && p.id === currentProgram.id;
+        {upcoming.map((p) => {
           const { artwork } = getProgramVisuals(p);
+          const meta = p.host ? `${p.start} – ${p.end} • ${p.host}` : `${p.start} – ${p.end}`;
+          const isScheduled = !!scheduledByProgramId[p.id];
+          const isScheduling = schedulingProgramId === p.id;
 
           return (
             <View
-              key={`${p.id}-${p.start}-${p.end}`}
+              key={p.id}
               style={{
-                width: 290,
+                width: 300,
                 borderRadius: 18,
                 overflow: "hidden",
-                backgroundColor: isCurrent ? "rgba(255,255,255,0.10)" : "rgba(255,255,255,0.06)",
+                backgroundColor: "rgba(255,255,255,0.06)",
                 borderWidth: 1,
-                borderColor: isCurrent ? "rgba(245,158,80,0.55)" : "rgba(255,255,255,0.10)",
+                borderColor: "rgba(255,255,255,0.10)",
               }}
             >
               <View style={{ flexDirection: "row", alignItems: "center", padding: 14, gap: 12 }}>
-                {/* Artwork */}
                 <View
                   style={{
                     width: 64,
@@ -83,56 +291,17 @@ export function UpcomingProgramsCarousel({
                     overflow: "hidden",
                     backgroundColor: "rgba(156,195,255,0.12)",
                     borderWidth: 1,
-                    borderColor: isCurrent ? "rgba(245,158,80,0.55)" : "rgba(156,195,255,0.18)",
+                    borderColor: "rgba(156,195,255,0.18)",
                   }}
                 >
                   <Image source={artwork} style={{ width: "100%", height: "100%" }} resizeMode="cover" />
                 </View>
 
-                {/* Text */}
                 <View style={{ flex: 1, minWidth: 0 }}>
-                  {/* Badge */}
-                  <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-                    <View
-                      style={{
-                        paddingHorizontal: 10,
-                        paddingVertical: 4,
-                        borderRadius: 999,
-                        backgroundColor: isCurrent ? "rgba(245,158,80,0.20)" : "rgba(255,255,255,0.08)",
-                        borderWidth: 1,
-                        borderColor: isCurrent ? "rgba(245,158,80,0.40)" : "rgba(255,255,255,0.10)",
-                      }}
-                    >
-                      <Text
-                        style={{
-                          fontSize: 10,
-                          fontWeight: "900",
-                          letterSpacing: 1,
-                          color: isCurrent ? "rgba(255,255,255,0.95)" : "rgba(255,255,255,0.70)",
-                        }}
-                      >
-                        {isCurrent ? "AHORA" : "PRÓXIMO"}
-                      </Text>
-                    </View>
-
-                    {isCurrent ? (
-                      <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-                        <View
-                          style={{
-                            width: 6,
-                            height: 6,
-                            borderRadius: 99,
-                            backgroundColor: "#EF4444",
-                          }}
-                        />
-                        <Text style={{ fontSize: 10, fontWeight: "900", color: "rgba(255,255,255,0.85)" }}>
-                          LIVE
-                        </Text>
-                      </View>
-                    ) : null}
-                  </View>
-
-                  <Text numberOfLines={1} style={{ marginTop: 8, fontSize: 16, fontWeight: "900", color: "#FFFFFF" }}>
+                  <Text
+                    numberOfLines={1}
+                    style={{ fontSize: 16, fontWeight: "900", color: "#FFFFFF" }}
+                  >
                     {p.title}
                   </Text>
 
@@ -145,11 +314,10 @@ export function UpcomingProgramsCarousel({
                       color: "rgba(255,255,255,0.72)",
                     }}
                   >
-                    {metaLabel(p)}
+                    {meta}
                   </Text>
                 </View>
 
-                {/* 3 dots */}
                 <Pressable
                   onPress={() => onOpenProgramMenu?.(p)}
                   style={({ pressed }) => ({
@@ -160,10 +328,63 @@ export function UpcomingProgramsCarousel({
                     justifyContent: "center",
                     backgroundColor: pressed ? "rgba(255,255,255,0.10)" : "rgba(255,255,255,0.06)",
                     borderWidth: 1,
-                    borderColor: isCurrent ? "rgba(245,158,80,0.40)" : "rgba(255,255,255,0.10)",
+                    borderColor: "rgba(255,255,255,0.10)",
                   })}
                 >
                   <Feather name="more-horizontal" size={18} color="rgba(255,255,255,0.85)" />
+                </Pressable>
+              </View>
+
+              <View style={{ height: 1, backgroundColor: "rgba(255,255,255,0.08)" }} />
+
+              <View
+                style={{
+                  paddingHorizontal: 14,
+                  paddingVertical: 12,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: 10,
+                }}
+              >
+                <Text
+                  style={{
+                    fontSize: 11,
+                    fontWeight: "900",
+                    color: "rgba(255,255,255,0.60)",
+                  }}
+                >
+                  Próximo bloque
+                </Text>
+
+                <Pressable
+                  onPress={() => handleScheduleProgram(p)}
+                  disabled={isScheduling}
+                  style={({ pressed }) => ({
+                    paddingHorizontal: 12,
+                    paddingVertical: 9,
+                    borderRadius: 12,
+                    backgroundColor: pressed
+                      ? "rgba(255,255,255,0.10)"
+                      : isScheduled
+                      ? "rgba(156,195,255,0.14)"
+                      : "rgba(255,255,255,0.06)",
+                    borderWidth: 1,
+                    borderColor: isScheduled
+                      ? "rgba(156,195,255,0.22)"
+                      : "rgba(255,255,255,0.10)",
+                    opacity: isScheduling ? 0.7 : 1,
+                  })}
+                >
+                  <Text
+                    style={{
+                      color: isScheduled ? "#9CC3FF" : "#FFFFFF",
+                      fontWeight: "900",
+                      fontSize: 12,
+                    }}
+                  >
+                    {isScheduled ? "Recordatorio activado" : "Recordarme"}
+                  </Text>
                 </Pressable>
               </View>
             </View>

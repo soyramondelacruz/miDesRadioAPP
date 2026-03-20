@@ -4,11 +4,12 @@ import {
   View,
   Text,
   Pressable,
+  TouchableOpacity,
   ActivityIndicator,
+  Animated,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
-
 import { useRadioPlayer } from "../context/RadioPlayerContext";
 
 export function MiniPlayer() {
@@ -18,6 +19,38 @@ export function MiniPlayer() {
   const isLoading = status === "loading";
   const isPlaying = status === "playing";
   const isPaused = status === "paused";
+
+  const pulse = React.useRef(new Animated.Value(1)).current;
+
+  React.useEffect(() => {
+    if (!isPlaying) {
+      pulse.stopAnimation();
+      pulse.setValue(1);
+      return;
+    }
+
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulse, {
+          toValue: 0.28,
+          duration: 650,
+          useNativeDriver: true,
+        }),
+        Animated.timing(pulse, {
+          toValue: 1,
+          duration: 650,
+          useNativeDriver: true,
+        }),
+      ])
+    );
+
+    loop.start();
+    return () => loop.stop();
+  }, [isPlaying, pulse]);
+
+  function handleOpenRadio() {
+    navigation.navigate("Radio");
+  }
 
   async function handleTogglePlayback() {
     if (isLoading) return;
@@ -33,37 +66,33 @@ export function MiniPlayer() {
     }
   }
 
-  function handleOpenRadio() {
-    navigation.navigate("Radio");
-  }
-
   const statusLabel = isPlaying ? "En vivo" : isPaused ? "Pausado" : "Listo";
   const statusColor = isPlaying ? "#EF4444" : "rgba(255,255,255,0.58)";
 
   return (
     <View
-      pointerEvents="box-none"
       style={{
         paddingHorizontal: 14,
       }}
     >
-      <Pressable
-        onPress={handleOpenRadio}
-        style={({ pressed }) => ({
+      <View
+        style={{
           minHeight: 52,
           borderRadius: 18,
           overflow: "hidden",
           backgroundColor: "rgba(14,22,36,0.94)",
           borderWidth: 1,
           borderColor: "rgba(255,255,255,0.08)",
-          opacity: pressed ? 0.96 : 1,
-
           shadowColor: "#000",
           shadowOpacity: 0.16,
           shadowRadius: 14,
           shadowOffset: { width: 0, height: 8 },
           elevation: 14,
-        })}
+          flexDirection: "row",
+          alignItems: "center",
+          paddingHorizontal: 12,
+          paddingVertical: 8,
+        }}
       >
         {isPlaying && (
           <View
@@ -79,52 +108,51 @@ export function MiniPlayer() {
           />
         )}
 
-        <View
+        {/* Play / Pause */}
+        <TouchableOpacity
+          activeOpacity={0.8}
+          onPress={handleTogglePlayback}
           style={{
-            flexDirection: "row",
+            width: 34,
+            height: 34,
+            borderRadius: 17,
             alignItems: "center",
-            paddingHorizontal: 12,
-            paddingVertical: 8,
-            gap: 12,
+            justifyContent: "center",
+            backgroundColor: "rgba(47,93,159,0.18)",
+            borderWidth: 1,
+            borderColor: "rgba(47,93,159,0.28)",
+            marginRight: 12,
           }}
         >
-          {/* Play / Pause */}
-          <Pressable
-            onPress={(e) => {
-              e.stopPropagation();
-              handleTogglePlayback();
-            }}
-            style={({ pressed }) => ({
-              width: 34,
-              height: 34,
-              borderRadius: 17,
-              alignItems: "center",
-              justifyContent: "center",
-              backgroundColor: "rgba(47,93,159,0.18)",
-              borderWidth: 1,
-              borderColor: "rgba(47,93,159,0.28)",
-              opacity: pressed ? 0.9 : 1,
-            })}
-          >
-            {isLoading ? (
-              <ActivityIndicator size="small" color="#9CC3FF" />
-            ) : (
-              <Ionicons
-                name={isPlaying ? "pause" : "play"}
-                size={18}
-                color="#FFFFFF"
-                style={{ marginLeft: isPlaying ? 0 : 2 }}
-              />
-            )}
-          </Pressable>
+          {isLoading ? (
+            <ActivityIndicator size="small" color="#9CC3FF" />
+          ) : (
+            <Ionicons
+              name={isPlaying ? "pause" : "play"}
+              size={18}
+              color="#FFFFFF"
+              style={{ marginLeft: isPlaying ? 0 : 2 }}
+            />
+          )}
+        </TouchableOpacity>
 
-          {/* Title */}
+        {/* Zona que abre Radio */}
+        <Pressable
+          onPress={handleOpenRadio}
+          style={({ pressed }) => ({
+            flex: 1,
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+            opacity: pressed ? 0.97 : 1,
+          })}
+        >
           <Text
             numberOfLines={1}
             style={{
               flex: 1,
               fontSize: 14,
-              fontWeight: "700",
+              fontWeight: "900",
               color: "#FFFFFF",
               letterSpacing: -0.2,
             }}
@@ -132,36 +160,37 @@ export function MiniPlayer() {
             miDes Radio
           </Text>
 
-          {/* Status */}
           <View
             style={{
               flexDirection: "row",
               alignItems: "center",
               gap: 6,
+              marginLeft: 12,
             }}
           >
-            <View
+            <Animated.View
               style={{
                 width: 7,
                 height: 7,
                 borderRadius: 99,
                 backgroundColor: statusColor,
+                opacity: pulse,
               }}
             />
             <Text
               style={{
-                fontSize: 11,
-                fontWeight: "600",
+                fontSize: 10,
+                fontWeight: "700",
                 color: "rgba(255,255,255,0.78)",
                 textTransform: "uppercase",
-                letterSpacing: 0.6,
+                letterSpacing: 0.8,
               }}
             >
               {statusLabel}
             </Text>
           </View>
-        </View>
-      </Pressable>
+        </Pressable>
+      </View>
     </View>
   );
 }
