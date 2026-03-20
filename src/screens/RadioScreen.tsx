@@ -276,9 +276,7 @@ export function RadioScreen() {
   const isPlaying = status === "playing";
 
   const [mainSheetOpen, setMainSheetOpen] = useState(false);
-  const [programSheetOpen, setProgramSheetOpen] = useState(false);
-  const [selectedProgram, setSelectedProgram] = useState<any | null>(null);
-
+  
   const stationNow = useMemo(() => getStationNow(new Date(effectiveNow)), [effectiveNow]);
 
   const { current, upcoming } = useMemo(
@@ -535,14 +533,9 @@ export function RadioScreen() {
             <View style={{ height: 26 }} />
           </View>
 
-          <UpcomingProgramsCarousel
+            <UpcomingProgramsCarousel
             title="Lo que viene"
             programs={upcoming}
-            currentProgram={current}
-            onOpenProgramMenu={(p) => {
-              setSelectedProgram(p);
-              setProgramSheetOpen(true);
-            }}
           />
          
 
@@ -675,34 +668,7 @@ export function RadioScreen() {
             ]}
           />
 
-          {/* PROGRAM MENU SHEET */}
-      <SlidingSheet
-        visible={programSheetOpen}
-        title={selectedProgram ? selectedProgram.title : "PROGRAMA"}
-        onClose={() => setProgramSheetOpen(false)}
-        items={[
-          {
-            label: "Compartir",
-            icon: "share-2",
-            onPress: () => console.log("Share program", selectedProgram),
-          },
-
-          ...(selectedProgram?.kind === "show"
-            ? [
-                {
-                  label: "Abrir detalle",
-                  icon: "arrow-up-right",
-                  onPress: () => {
-                    if (!selectedProgram?.id) return;
-                    navigation.navigate("ProgramDetail", {
-                      programId: selectedProgram.id,
-                    });
-                  },
-                },
-              ]
-            : []),
-        ]}
-      />
+         
         </View>
       </ScrollView>
     </View>

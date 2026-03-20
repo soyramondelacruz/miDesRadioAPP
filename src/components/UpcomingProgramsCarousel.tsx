@@ -7,9 +7,11 @@ import {
   Pressable,
   Image,
   Alert,
+  Share,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import * as Notifications from "expo-notifications";
+import { useNavigation } from "@react-navigation/native";
 
 import { STATION_TIMEZONE, weeklySchedule, Program } from "../data/schedule";
 import { getProgramVisuals } from "../data/programVisuals";
@@ -107,14 +109,14 @@ async function requestNotificationPermissions() {
 type Props = {
   title?: string;
   programs?: Program[];
-  onOpenProgramMenu?: (program: Program) => void;
+  currentProgram?: Program | null;
 };
 
 export function UpcomingProgramsCarousel({
   title = "Lo que viene",
   programs,
-  onOpenProgramMenu,
 }: Props) {
+  const navigation = useNavigation<any>();
   const { simulatedISOTime } = useRadioPlayer();
 
   const [tick, setTick] = useState(0);
@@ -192,7 +194,8 @@ export function UpcomingProgramsCarousel({
       const now = new Date();
       const nextOccurrence = getNextOccurrenceForBlock(program, now, day);
       const fiveMinutesBefore = new Date(nextOccurrence.getTime() - 5 * 60 * 1000);
-      const reminderDate = fiveMinutesBefore > now ? fiveMinutesBefore : new Date(Date.now() + 10000);
+      const reminderDate =
+        fiveMinutesBefore > now ? fiveMinutesBefore : new Date(Date.now() + 10000);
 
       const identifier = await Notifications.scheduleNotificationAsync({
         content: {
@@ -232,6 +235,16 @@ export function UpcomingProgramsCarousel({
       );
     } finally {
       setSchedulingProgramId(null);
+    }
+  }
+
+  async function handleShareProgram(program: Program) {
+    try {
+      await Share.share({
+        message: `${program.title} • ${program.start} - ${program.end}${program.host ? ` • ${program.host}` : ""}\nEscúchalo en miDes Radio.`,
+      });
+    } catch (error) {
+      console.log("Share program error:", error);
     }
   }
 
@@ -282,111 +295,110 @@ export function UpcomingProgramsCarousel({
                 borderColor: "rgba(255,255,255,0.10)",
               }}
             >
-              <View style={{ flexDirection: "row", alignItems: "center", padding: 14, gap: 12 }}>
-                <View
-                  style={{
-                    width: 64,
-                    height: 64,
-                    borderRadius: 14,
-                    overflow: "hidden",
-                    backgroundColor: "rgba(156,195,255,0.12)",
-                    borderWidth: 1,
-                    borderColor: "rgba(156,195,255,0.18)",
-                  }}
-                >
-                  <Image source={artwork} style={{ width: "100%", height: "100%" }} resizeMode="cover" />
-                </View>
-
-                <View style={{ flex: 1, minWidth: 0 }}>
-                  <Text
-                    numberOfLines={1}
-                    style={{ fontSize: 16, fontWeight: "900", color: "#FFFFFF" }}
-                  >
-                    {p.title}
-                  </Text>
-
-                  <Text
-                    numberOfLines={1}
-                    style={{
-                      marginTop: 4,
-                      fontSize: 12,
-                      fontWeight: "800",
-                      color: "rgba(255,255,255,0.72)",
-                    }}
-                  >
-                    {meta}
-                  </Text>
-                </View>
-
-                <Pressable
-                  onPress={() => onOpenProgramMenu?.(p)}
-                  style={({ pressed }) => ({
-                    width: 40,
-                    height: 40,
-                    borderRadius: 14,
-                    alignItems: "center",
-                    justifyContent: "center",
-                    backgroundColor: pressed ? "rgba(255,255,255,0.10)" : "rgba(255,255,255,0.06)",
-                    borderWidth: 1,
-                    borderColor: "rgba(255,255,255,0.10)",
-                  })}
-                >
-                  <Feather name="more-horizontal" size={18} color="rgba(255,255,255,0.85)" />
-                </Pressable>
-              </View>
-
-              <View style={{ height: 1, backgroundColor: "rgba(255,255,255,0.08)" }} />
-
-              <View
-                style={{
-                  paddingHorizontal: 14,
-                  paddingVertical: 12,
-                  flexDirection: "row",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  gap: 10,
-                }}
+              <Pressable
+                onPress={() => navigation.navigate("ProgramDetail", { programId: p.id })}
+                style={({ pressed }) => ({
+                  opacity: pressed ? 0.96 : 1,
+                })}
               >
-                <Text
-                  style={{
-                    fontSize: 11,
-                    fontWeight: "900",
-                    color: "rgba(255,255,255,0.60)",
-                  }}
-                >
-                  Próximo bloque
-                </Text>
-
-                <Pressable
-                  onPress={() => handleScheduleProgram(p)}
-                  disabled={isScheduling}
-                  style={({ pressed }) => ({
-                    paddingHorizontal: 12,
-                    paddingVertical: 9,
-                    borderRadius: 12,
-                    backgroundColor: pressed
-                      ? "rgba(255,255,255,0.10)"
-                      : isScheduled
-                      ? "rgba(156,195,255,0.14)"
-                      : "rgba(255,255,255,0.06)",
-                    borderWidth: 1,
-                    borderColor: isScheduled
-                      ? "rgba(156,195,255,0.22)"
-                      : "rgba(255,255,255,0.10)",
-                    opacity: isScheduling ? 0.7 : 1,
-                  })}
-                >
-                  <Text
+                <View style={{ flexDirection: "row", alignItems: "center", padding: 14, gap: 12 }}>
+                  <View
                     style={{
-                      color: isScheduled ? "#9CC3FF" : "#FFFFFF",
-                      fontWeight: "900",
-                      fontSize: 12,
+                      width: 64,
+                      height: 64,
+                      borderRadius: 14,
+                      overflow: "hidden",
+                      backgroundColor: "rgba(156,195,255,0.12)",
+                      borderWidth: 1,
+                      borderColor: "rgba(156,195,255,0.18)",
                     }}
                   >
-                    {isScheduled ? "Recordatorio activado" : "Recordarme"}
-                  </Text>
-                </Pressable>
-              </View>
+                    <Image source={artwork} style={{ width: "100%", height: "100%" }} resizeMode="cover" />
+                  </View>
+
+                  <View style={{ flex: 1, minWidth: 0 }}>
+                    <Text
+                      numberOfLines={1}
+                      style={{ fontSize: 16, fontWeight: "900", color: "#FFFFFF" }}
+                    >
+                      {p.title}
+                    </Text>
+
+                    <View
+                      style={{
+                        marginTop: 4,
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: 10,
+                      }}
+                    >
+                      <Text
+                        numberOfLines={1}
+                        style={{
+                          flex: 1,
+                          fontSize: 12,
+                          fontWeight: "800",
+                          color: "rgba(255,255,255,0.72)",
+                        }}
+                      >
+                        {meta}
+                      </Text>
+
+                      <Pressable
+                        onPress={(e) => {
+                          e.stopPropagation();
+                          handleScheduleProgram(p);
+                        }}
+                        disabled={isScheduling}
+                        hitSlop={8}
+                        style={({ pressed }) => ({
+                          width: 30,
+                          height: 30,
+                          borderRadius: 10,
+                          alignItems: "center",
+                          justifyContent: "center",
+                          backgroundColor: pressed
+                            ? "rgba(255,255,255,0.10)"
+                            : isScheduled
+                            ? "rgba(156,195,255,0.14)"
+                            : "rgba(255,255,255,0.06)",
+                          borderWidth: 1,
+                          borderColor: isScheduled
+                            ? "rgba(156,195,255,0.22)"
+                            : "rgba(255,255,255,0.10)",
+                          opacity: isScheduling ? 0.7 : 1,
+                        })}
+                      >
+                        <Feather
+                          name={isScheduled ? "check" : "clock"}
+                          size={15}
+                          color={isScheduled ? "#9CC3FF" : "rgba(255,255,255,0.82)"}
+                        />
+                      </Pressable>
+
+                      <Pressable
+                        onPress={(e) => {
+                          e.stopPropagation();
+                          handleShareProgram(p);
+                        }}
+                        hitSlop={8}
+                        style={({ pressed }) => ({
+                          width: 30,
+                          height: 30,
+                          borderRadius: 10,
+                          alignItems: "center",
+                          justifyContent: "center",
+                          backgroundColor: pressed ? "rgba(255,255,255,0.10)" : "rgba(255,255,255,0.06)",
+                          borderWidth: 1,
+                          borderColor: "rgba(255,255,255,0.10)",
+                        })}
+                      >
+                        <Feather name="share-2" size={15} color="rgba(255,255,255,0.82)" />
+                      </Pressable>
+                    </View>
+                  </View>
+                </View>
+              </Pressable>
             </View>
           );
         })}
