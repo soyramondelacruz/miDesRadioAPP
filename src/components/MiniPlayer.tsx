@@ -1,111 +1,167 @@
+// src/components/MiniPlayer.tsx
 import React from "react";
-import { View, Text, Pressable, ActivityIndicator } from "react-native";
+import {
+  View,
+  Text,
+  Pressable,
+  ActivityIndicator,
+} from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { Ionicons } from "@expo/vector-icons";
+
 import { useRadioPlayer } from "../context/RadioPlayerContext";
-import { colors, spacing, radius, typography } from "../theme";
 
 export function MiniPlayer() {
   const navigation = useNavigation<any>();
-  const { status, play, pause, now } = useRadioPlayer();
+  const { status, play, pause } = useRadioPlayer();
 
-  if (status === "idle") return null;
-
-  const isPlaying = status === "playing";
   const isLoading = status === "loading";
+  const isPlaying = status === "playing";
+  const isPaused = status === "paused";
 
-  const title =
-    now.data?.show?.title ??
-    now.data?.track?.title ??
-    "miDes Radio";
-
-  const host =
-    now.data?.show?.host ??
-    now.data?.track?.artist ??
-    null;
-
-  function toggle() {
+  async function handleTogglePlayback() {
     if (isLoading) return;
-    isPlaying ? pause() : play();
+
+    try {
+      if (isPlaying) {
+        await pause();
+      } else {
+        await play();
+      }
+    } catch (error) {
+      console.log("MiniPlayer toggle error:", error);
+    }
   }
 
+  function handleOpenRadio() {
+    navigation.navigate("Radio");
+  }
+
+  const statusLabel = isPlaying ? "En vivo" : isPaused ? "Pausado" : "Listo";
+  const statusColor = isPlaying ? "#EF4444" : "rgba(255,255,255,0.58)";
+
   return (
-    <Pressable
-      onPress={() => navigation.navigate("Radio")}
-      style={({ pressed }) => ({
-        marginHorizontal: spacing.md,
-        marginBottom: spacing.md,
-        backgroundColor: colors.surface,
-        borderRadius: radius.lg,
-        padding: spacing.md,
-        flexDirection: "row",
-        alignItems: "center",
-        gap: spacing.md,
-        shadowColor: "#000",
-        shadowOpacity: 0.08,
-        shadowRadius: 12,
-        elevation: 6,
-        opacity: pressed ? 0.95 : 1,
-      })}
+    <View
+      pointerEvents="box-none"
+      style={{
+        paddingHorizontal: 14,
+      }}
     >
-      {/* Play / Pause */}
       <Pressable
-        onPress={toggle}
-        style={{
-          width: 44,
-          height: 44,
-          borderRadius: 22,
-          backgroundColor: colors.primary,
-          alignItems: "center",
-          justifyContent: "center",
-        }}
+        onPress={handleOpenRadio}
+        style={({ pressed }) => ({
+          minHeight: 52,
+          borderRadius: 18,
+          overflow: "hidden",
+          backgroundColor: "rgba(14,22,36,0.94)",
+          borderWidth: 1,
+          borderColor: "rgba(255,255,255,0.08)",
+          opacity: pressed ? 0.96 : 1,
+
+          shadowColor: "#000",
+          shadowOpacity: 0.16,
+          shadowRadius: 14,
+          shadowOffset: { width: 0, height: 8 },
+          elevation: 14,
+        })}
       >
-        {isLoading ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <Text
+        {isPlaying && (
+          <View
+            pointerEvents="none"
             style={{
-              color: "#fff",
-              fontSize: typography.size.md,
-              fontFamily: typography.fontFamily.bold,
+              position: "absolute",
+              left: 0,
+              right: 0,
+              bottom: 0,
+              height: 2,
+              backgroundColor: "rgba(47,93,159,0.95)",
+            }}
+          />
+        )}
+
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            paddingHorizontal: 12,
+            paddingVertical: 8,
+            gap: 12,
+          }}
+        >
+          {/* Play / Pause */}
+          <Pressable
+            onPress={(e) => {
+              e.stopPropagation();
+              handleTogglePlayback();
+            }}
+            style={({ pressed }) => ({
+              width: 34,
+              height: 34,
+              borderRadius: 17,
+              alignItems: "center",
+              justifyContent: "center",
+              backgroundColor: "rgba(47,93,159,0.18)",
+              borderWidth: 1,
+              borderColor: "rgba(47,93,159,0.28)",
+              opacity: pressed ? 0.9 : 1,
+            })}
+          >
+            {isLoading ? (
+              <ActivityIndicator size="small" color="#9CC3FF" />
+            ) : (
+              <Ionicons
+                name={isPlaying ? "pause" : "play"}
+                size={18}
+                color="#FFFFFF"
+                style={{ marginLeft: isPlaying ? 0 : 2 }}
+              />
+            )}
+          </Pressable>
+
+          {/* Title */}
+          <Text
+            numberOfLines={1}
+            style={{
+              flex: 1,
+              fontSize: 14,
+              fontWeight: "700",
+              color: "#FFFFFF",
+              letterSpacing: -0.2,
             }}
           >
-            {isPlaying ? "⏸" : "▶"}
+            miDes Radio
           </Text>
-        )}
+
+          {/* Status */}
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 6,
+            }}
+          >
+            <View
+              style={{
+                width: 7,
+                height: 7,
+                borderRadius: 99,
+                backgroundColor: statusColor,
+              }}
+            />
+            <Text
+              style={{
+                fontSize: 11,
+                fontWeight: "600",
+                color: "rgba(255,255,255,0.78)",
+                textTransform: "uppercase",
+                letterSpacing: 0.6,
+              }}
+            >
+              {statusLabel}
+            </Text>
+          </View>
+        </View>
       </Pressable>
-
-      {/* Text */}
-      <View style={{ flex: 1 }}>
-        <Text
-          numberOfLines={1}
-          style={{
-            fontSize: typography.size.sm,
-            fontFamily: typography.fontFamily.bold,
-            color: colors.textPrimary,
-          }}
-        >
-          {title}
-        </Text>
-
-        <Text
-          numberOfLines={1}
-          style={{
-            fontSize: typography.size.xs,
-            fontFamily: typography.fontFamily.medium,
-            color: isPlaying
-              ? colors.danger
-              : isLoading
-              ? colors.primary
-              : colors.textSecondary,
-          }}
-        >
-          {isLoading
-            ? "Conectando..."
-            : isPlaying
-            ? host ?? "🔴 En vivo"
-            : "Pausado"}
-        </Text>
-      </View>
-    </Pressable>
+    </View>
   );
 }
