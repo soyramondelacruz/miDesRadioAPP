@@ -1,6 +1,13 @@
 // src/components/FeaturedProgramsGrid.tsx
-import React, { useEffect, useMemo, useState } from "react";
-import { View, Text, Pressable, Image, Alert } from "react-native";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import {
+  View,
+  Text,
+  Pressable,
+  Image,
+  Alert,
+  Animated,
+} from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { Feather } from "@expo/vector-icons";
 import * as Notifications from "expo-notifications";
@@ -29,6 +36,72 @@ async function requestNotificationPermissions() {
   }
 
   return finalStatus === "granted";
+}
+
+function ReminderClockButton({
+  isScheduled,
+  isScheduling,
+  onPress,
+}: {
+  isScheduled: boolean;
+  isScheduling: boolean;
+  onPress: () => void;
+}) {
+  const scale = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    if (!isScheduled) return;
+
+    Animated.sequence([
+      Animated.timing(scale, {
+        toValue: 1.12,
+        duration: 120,
+        useNativeDriver: true,
+      }),
+      Animated.timing(scale, {
+        toValue: 1,
+        duration: 140,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [isScheduled, scale]);
+
+  return (
+    <Pressable
+      onPress={onPress}
+      disabled={isScheduling}
+      hitSlop={8}
+      style={({ pressed }) => ({
+        position: "absolute",
+        top: 8,
+        right: 8,
+        zIndex: 20,
+        width: 34,
+        height: 34,
+        borderRadius: 12,
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: pressed
+          ? "rgba(255,255,255,0.16)"
+          : isScheduled
+          ? "rgba(156,195,255,0.18)"
+          : "rgba(14,22,36,0.68)",
+        borderWidth: 1,
+        borderColor: isScheduled
+          ? "rgba(156,195,255,0.30)"
+          : "rgba(255,255,255,0.14)",
+        opacity: isScheduling ? 0.7 : 1,
+      })}
+    >
+      <Animated.View style={{ transform: [{ scale }] }}>
+        <Feather
+          name="clock"
+          size={15}
+          color={isScheduled ? "#9CC3FF" : "rgba(255,255,255,0.88)"}
+        />
+      </Animated.View>
+    </Pressable>
+  );
 }
 
 export function FeaturedProgramsGrid({
@@ -164,7 +237,7 @@ export function FeaturedProgramsGrid({
                 borderRadius: 18,
                 overflow: "hidden",
                 backgroundColor: "rgba(255,255,255,0.06)",
-                borderWidth: 1.2,
+                borderWidth: 1,
                 borderColor: "rgba(255,255,255,0.10)",
               }}
             >
@@ -174,11 +247,17 @@ export function FeaturedProgramsGrid({
                   opacity: pressed ? 0.96 : 1,
                 })}
               >
-                <View style={{ height: 120 }}>
+                <View style={{ height: 120, position: "relative" }}>
                   <Image
                     source={artwork}
-                    style={{ width: "100%%", height: "100%" }}
+                    style={{ width: "100%", height: "100%" }}
                     resizeMode="cover"
+                  />
+
+                  <ReminderClockButton
+                    isScheduled={isScheduled}
+                    isScheduling={isScheduling}
+                    onPress={() => handleScheduleProgram(p as any)}
                   />
                 </View>
 
@@ -190,59 +269,16 @@ export function FeaturedProgramsGrid({
                     {p.title}
                   </Text>
 
-                  <View
+                  <Text
+                    numberOfLines={1}
                     style={{
-                      marginTop: 2,
-                      flexDirection: "row",
-                      alignItems: "center",
-                      gap: 8,
+                      marginTop: 4,
+                      fontSize: 12,
+                      color: "rgba(255,255,255,0.7)",
                     }}
                   >
-                    <Text
-                      numberOfLines={1}
-                      style={{
-                        flex: 1,
-                        fontSize: 11,
-                        color: "rgba(255,255,255,0.7)",
-                        marginTop: -5,
-                      }}
-                    >
-                      {p.subtitle ?? "miDes Radio"}
-                    </Text>
-
-                    <Pressable
-                      onPress={(e) => {
-                        e.stopPropagation();
-                        handleScheduleProgram(p as any);
-                      }}
-                      disabled={isScheduling}
-                      hitSlop={8}
-                      style={({ pressed }) => ({
-                       
-                        width: 27,
-                        height: 27,
-                        borderRadius: 10,
-                        alignItems: "center",
-                        justifyContent: "center",
-                        backgroundColor: pressed
-                          ? "rgba(255,255,255,0.10)"
-                          : isScheduled
-                          ? "rgba(156,195,255,0.14)"
-                          : "rgba(255,255,255,0.06)",
-                        borderWidth: 1,
-                        borderColor: isScheduled
-                          ? "rgba(156,195,255,0.22)"
-                          : "rgba(255,255,255,0.10)",
-                        opacity: isScheduling ? 0.7 : 1,
-                      })}
-                    >
-                      <Feather
-                        name={isScheduled ? "check" : "clock"}
-                        size={15}
-                        color={isScheduled ? "#9CC3FF" : "rgba(255,255,255,0.82)"}
-                      />
-                    </Pressable>
-                  </View>
+                    {p.subtitle ?? "miDes Radio"}
+                  </Text>
                 </View>
               </Pressable>
             </View>
