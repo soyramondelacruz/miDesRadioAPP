@@ -4,65 +4,74 @@ import type { Program } from "./schedule";
 // ✅ Default
 export const DEFAULT_ARTWORK = require("../../assets/artwork.jpg");
 
-// ✅ Categorías (estables)
+// ✅ Categorías estables
 export const programCategoryArtworks = {
-  music: require("../../assets/programs/musica.jpg"),
-  prayer: require("../../assets/programs/oracion.jpg"),
+  music: require("../../assets/programs/mides-musica.jpg"),
+  prayer: require("../../assets/programs/mides-oracion.jpg"),
   news: require("../../assets/programs/noticias.jpg"),
   message: require("../../assets/programs/mensaje.jpg"),
   postrecito: require("../../assets/programs/postrecito.jpg"),
-  // OJO: este archivo debe existir exactamente con este nombre
   psychology: require("../../assets/programs/psicologia-fe.jpg"),
+
+  // ⚠️ Temporalmente apunta al default hasta que tengas el arte final
+  // Cuando crees el archivo real, reemplázalo por:
+
+   teaching: require("../../assets/programs/ensenanza.jpg"),
+  
 } as const;
 
 export type ProgramCategoryKey = keyof typeof programCategoryArtworks;
 
-// ✅ Programas especiales por ID (cuando tengas algo único)
-export const programSpecialArtworksById: Record<string, any> = {
-  // "wk-1800-estudio-biblico": require("../../assets/programs/estudio-biblico.jpg"),
-  // "special-semana-santa": require("../../assets/programs/semana-santa.jpg"),
+// ✅ Overrides personalizados
+// Puedes usar:
+// - el catalogId (recomendado para familias/editorial)
+// - o el id del bloque específico
+export const programArtworkOverrides: Record<string, any> = {
+  // Ejemplos:
+  // "tiempos-oracion": require("../../assets/programs/tiempos-oracion.jpg"),
+  // "tue-1200-hola-mujer": require("../../assets/programs/hola-mujer.jpg"),
+  // "tue-1800-arranca-fa": require("../../assets/programs/arranca-fa.jpg"),
 };
 
-// ✅ Resolución final (1 sola función para toda la app)
+// ✅ Resolución final
 export function getProgramVisuals(program?: Program | null): {
   artwork: any;
   category: ProgramCategoryKey | "default";
 } {
-  if (!program) return { artwork: DEFAULT_ARTWORK, category: "default" };
+  if (!program) {
+    return { artwork: DEFAULT_ARTWORK, category: "default" };
+  }
 
-  // 1) Especial por ID
-  const special = programSpecialArtworksById[program.id];
-  if (special) return { artwork: special, category: "default" };
-
-  // 2) Si tu Program trae un campo opcional `visualKey`, úsalo:
+  const catalogId = (program as any).catalogId as string | undefined;
   const visualKey = (program as any).visualKey as ProgramCategoryKey | undefined;
+
+  // 🥇 1. Override por catalogId
+  if (catalogId && programArtworkOverrides[catalogId]) {
+    return {
+      artwork: programArtworkOverrides[catalogId],
+      category: "default",
+    };
+  }
+
+  // 🥈 2. Override por id del bloque
+  if (programArtworkOverrides[program.id]) {
+    return {
+      artwork: programArtworkOverrides[program.id],
+      category: "default",
+    };
+  }
+
+  // 🥉 3. VisualKey
   if (visualKey && programCategoryArtworks[visualKey]) {
-    return { artwork: programCategoryArtworks[visualKey], category: visualKey };
+    return {
+      artwork: programCategoryArtworks[visualKey],
+      category: visualKey,
+    };
   }
 
-  // 3) Inferencia por título (v1)
-  const t = (program.title || "").toLowerCase();
-
-  if (t.includes("oración") || t.includes("orando") || t.includes("clamar")) {
-    return { artwork: programCategoryArtworks.prayer, category: "prayer" };
-  }
-
-  if (t.includes("noticia")) {
-    return { artwork: programCategoryArtworks.news, category: "news" };
-  }
-
-  if (t.includes("mensaje") || t.includes("predica") || t.includes("predicación")) {
-    return { artwork: programCategoryArtworks.message, category: "message" };
-  }
-
-  if (t.includes("postrecito")) {
-    return { artwork: programCategoryArtworks.postrecito, category: "postrecito" };
-  }
-
-  if (t.includes("psicolog")) {
-    return { artwork: programCategoryArtworks.psychology, category: "psychology" };
-  }
-
-  // 4) Default
-  return { artwork: programCategoryArtworks.music ?? DEFAULT_ARTWORK, category: "music" };
+  // 4. Default limpio
+  return {
+    artwork: DEFAULT_ARTWORK,
+    category: "default",
+  };
 }
