@@ -12,12 +12,8 @@ export const programCategoryArtworks = {
   message: require("../../assets/programs/mensaje.jpg"),
   postrecito: require("../../assets/programs/postrecito.jpg"),
   psychology: require("../../assets/programs/psicologia-fe.jpg"),
-
-  // ⚠️ Temporalmente apunta al default hasta que tengas el arte final
-  // Cuando crees el archivo real, reemplázalo por:
-
-   teaching: require("../../assets/programs/ensenanza.jpg"),
-  
+  teaching: require("../../assets/programs/ensenanza.jpg"),
+   //teaching: DEFAULT_ARTWORK,
 } as const;
 
 export type ProgramCategoryKey = keyof typeof programCategoryArtworks;
@@ -28,9 +24,13 @@ export type ProgramCategoryKey = keyof typeof programCategoryArtworks;
 // - o el id del bloque específico
 export const programArtworkOverrides: Record<string, any> = {
   // Ejemplos:
-  // "tiempos-oracion": require("../../assets/programs/tiempos-oracion.jpg"),
-  // "tue-1200-hola-mujer": require("../../assets/programs/hola-mujer.jpg"),
-  // "tue-1800-arranca-fa": require("../../assets/programs/arranca-fa.jpg"),
+   "tiempos-oracion": require("../../assets/programs/mides-oracion.jpg"),
+  "tue-1200-hola-mujer": require("../../assets/programs/hola-mujer.jpg"),
+  "tue-1800-arranca-fa": require("../../assets/programs/arranca-fa.jpg"),
+  "tue-0900-hablemos-oracion": require("../../assets/programs/mides-hablemos.jpg"),
+  "lectura-biblica-guiada":require("../../assets/programs/mides-biblia.jpg"),
+  "musica-instrumental":require("../../assets/programs/mides-instrumental.jpg"),
+  "musica-adoracion":require("../../assets/programs/mides-musica.jpg")
 };
 
 // ✅ Resolución final

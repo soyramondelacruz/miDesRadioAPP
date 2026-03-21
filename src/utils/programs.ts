@@ -1,62 +1,87 @@
 // src/utils/programs.ts
-import { Program, weeklySchedule } from "../data/schedule";
+import { weeklySchedule, Program } from "../data/schedule";
 import { programCatalogById } from "../data/programCatalog";
 
-export type ResolvedProgram = Program & {
-  subtitle?: string;
-  description?: string;
-  featured?: boolean;
-  visualKey?: string;
+type ResolvedProgram = Program & {
   dayIndex: number;
   dayLabel: string;
+  subtitle?: string;
+  description?: string;
+  visualKey?: string;
+  featured?: boolean;
+  episodes?: {
+    enabled: boolean;
+  };
 };
 
-const DAY_LABELS: Record<number, string> = {
-  0: "Domingo",
-  1: "Lunes",
-  2: "Martes",
-  3: "Miércoles",
-  4: "Jueves",
-  5: "Viernes",
-  6: "Sábado",
-};
+const DAY_LABELS = [
+  "Domingo",
+  "Lunes",
+  "Martes",
+  "Miércoles",
+  "Jueves",
+  "Viernes",
+  "Sábado",
+];
 
-export function findProgramById(programId: string): { program: Program; dayIndex: number } | null {
-  const entries = Object.entries(weeklySchedule);
+function flattenSchedule(): Array<Program & { dayIndex: number; dayLabel: string }> {
+  const result: Array<Program & { dayIndex: number; dayLabel: string }> = [];
 
-  for (const [dayKey, dayPrograms] of entries) {
-    const found = dayPrograms.find((p) => p.id === programId);
-    if (found) {
-      return {
-        program: found,
-        dayIndex: Number(dayKey),
-      };
+  for (const [dayKey, programs] of Object.entries(weeklySchedule)) {
+    const dayIndex = Number(dayKey);
+    const dayLabel = DAY_LABELS[dayIndex] ?? "Día";
+
+    for (const program of programs) {
+      result.push({
+        ...program,
+        dayIndex,
+        dayLabel,
+      });
     }
+  }
+
+  return result;
+}
+
+function mergeWithCatalog(
+  scheduleProgram: Program & { dayIndex: number; dayLabel: string }
+): ResolvedProgram {
+  const catalogKey = scheduleProgram.catalogId ?? scheduleProgram.id;
+  const catalog = programCatalogById[catalogKey];
+
+  return {
+    ...scheduleProgram,
+    title: catalog?.title ?? scheduleProgram.title,
+    subtitle: catalog?.subtitle ?? scheduleProgram.host,
+    description:
+      catalog?.description ??
+      "Contenido de miDes Radio diseñado para edificar, acompañar y conectar con la audiencia.",
+    visualKey: catalog?.visualKey,
+    featured: catalog?.featured ?? false,
+    episodes: catalog?.episodes,
+  };
+}
+
+export function resolveProgramById(programId: string): ResolvedProgram | null {
+  const allPrograms = flattenSchedule();
+
+  const directMatch = allPrograms.find((program) => program.id === programId);
+  if (directMatch) {
+    return mergeWithCatalog(directMatch);
+  }
+
+  const catalogMatch = allPrograms.find((program) => program.catalogId === programId);
+  if (catalogMatch) {
+    return mergeWithCatalog(catalogMatch);
   }
 
   return null;
 }
 
-export function resolveProgramById(programId: string): ResolvedProgram | null {
-  const found = findProgramById(programId);
-  if (!found) return null;
+export function getProgramsByCatalogId(catalogId: string): ResolvedProgram[] {
+  const allPrograms = flattenSchedule();
 
-  const { program: base, dayIndex } = found;
-  const catalog = (programCatalogById as Record<string, any>)[programId];
-
-  return {
-    ...base,
-    title: catalog?.title ?? base.title,
-    host: catalog?.subtitle ?? base.host,
-    subtitle: catalog?.subtitle ?? base.host,
-    description:
-      catalog?.description ??
-      (base.kind === "music"
-        ? "Bloque musical de miDes Radio."
-        : "Programa de contenido dentro de la programación oficial de miDes Radio."),
-    featured: !!catalog?.featured,
-    visualKey: catalog?.visualKey,
-    dayIndex,
-    dayLabel: DAY_LABELS[dayIndex] ?? "Día no definido",
-  };
+  return allPrograms
+    .filter((program) => program.catalogId === catalogId)
+    .map(mergeWithCatalog);
 }
